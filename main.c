@@ -1,17 +1,5 @@
 #include "cub3d.h"
 
-int TILE_SIZE = 54;
-int MAP_NUM_ROWS = 11;
-int MAP_NUM_COLS = 15;
-
-int WINDOW_WIDTH = MAP_NUM_COLS * TILE_SIZE;
-int WINDOW_HEIGHT = MAP_NUM_ROWS * TILE_SIZE;
-
-int FOV_ANGLE = 60 * (PI / 180);
-int WALL_STRIP_WIDTH = 10;
-int NUM_RAYS = WINDOW_WIDTH / WALL_STRIP_WIDTH;
-int MAP_SCALE = 0.2;
-
 
 size_t	ft_strlen(const char *str)
 {
@@ -199,7 +187,8 @@ void	ft_check_map_error(char **ptr, size_t map_loc, size_t elm_count)
 		printf("%s\n", *map++);
 }
 
-void	ft_get_map_wh(t_list **list, char **ptr, size_t elm_count)
+void	ft_get_map_wh(
+t_list **list, char **ptr, size_t elm_count)
 {
 	size_t map_loc;
 
@@ -218,74 +207,25 @@ char	**ft_getinfo(t_list **list, size_t elm_count)
 
 	tmp = *list;
 	j = elm_count;
+//	printf("%d", elm_count);
 	ptr = (char**)malloc((sizeof(char*) * j) + 1);
 	while (tmp && j >= 0)
 	{
 		ptr[j - 1] = tmp->content;
+//		printf("%s\n", tmp->content);
 		tmp = tmp->next;
 		j--;
 	}
 	ptr[elm_count] = NULL;
+//	ft_get_map_wh(list, ptr, elm_count);
+//	while (ptr[i])
+//		printf("%s\n", ptr[i++]);
+//		printf("%d", end);
 return (ptr);
-}
-
-void	rect(t_data *data, int x, int y, int width, int height, int color)
-{
-	int i;
-	int j;
-
-	i = 0;
-	j = 0;
-	while(j <= height)
-	{
-		while (i <= width)
-		{
-			mlx_pixel_put(data->mlx, data->mlx_win, TILE_SIZE * x + i, TILE_SIZE * y + j, color);
-			i++;
-		}
-		j++;
-		
-	}
-}
-
-void	line(t_data *data, int x1, int y1, int x2, int y2, int color)
-{
-	int i;
-	int j;
-	double k;
-
-	i = 0;
-	j = 0;
-	k = (y2 - y1) / (x2 - x1);
-	while((x1 + i != x2) && (y1 + j != y2))
-	{
-		mlx_pixel_put(data->mlx, data->mlx_win, x + i, k * (x + i), color);
-
-	}
 }
 
 void	ft_draw_map(t_data *data)
 {
-	int i = 0;
-	int j = 0;
-	while (data->str[j])
-	{
-		i = 0;
-		while (data->str[j][i])
-		{
-			if (data->str[j][i] == '1')
-				rect(data, i, j, TILE_SIZE, TILE_SIZE, 0xFFFFFF);
-			else if (data->str[j][i] == '0')
-				rect(data, i, j, TILE_SIZE, TILE_SIZE, 0x000000);
-			i++;
-		}
-		j++;
-	}
-}
-
-void	ft_draw_player(t_data *data)
-{
-	
 	int i = 0;
 	int j = 0;
 	double x = 0;
@@ -296,7 +236,21 @@ void	ft_draw_player(t_data *data)
 		i = 0;
 		while (data->str[j][i])
 		{
-/*			if (data->str[j][i] == 'P')
+			if (data->str[j][i] == '1')
+			{
+				y = j * 20;
+				while (y / (j * 20 + 20) != 1)
+				{
+					x = i * 20;
+					while (x / (i * 20 + 20) != 1)
+					{
+						mlx_pixel_put(data->mlx, data->mlx_win, x, y, 0xFFFFFF);
+						x++;
+					}
+					y++;
+				}
+			}
+			if (data->str[j][i] == 'P')
 			{
 				plr.dir -= PI / 8;
 				while (plr.dir <= data->player.dir + PI / 8)
@@ -323,10 +277,6 @@ void	ft_draw_player(t_data *data)
 					}
 					plr.dir += 0.001;
 				}
-			}*/
-			if (data-> str[j][i] == 'P')
-			{
-				
 			}
 			i++;
 		}
@@ -334,16 +284,9 @@ void	ft_draw_player(t_data *data)
 	}
 }
 
-void	ft_draw(int keycode, t_data *data)
+void	ft_move(int keycode, t_data *data)
 {
-	ft_update(keycode, data);
-	ft_draw_map(data);
-	ft_draw_player(data);
-}
-
-
-void	ft_update(int keycode, t_data *data)
-{
+//	printf("%d", mlx_key_hook(data->mlx_win, ft_move, data));
 	mlx_clear_window(data->mlx, data->mlx_win);
 	if (keycode == 13)
 	{
@@ -373,21 +316,29 @@ int             ft_close(int keycode, t_data *data)
 int	main(int argc, char **argv)
 {
 	int fd;
-	size_t	elm_count;	//counts the amout of lines in the input map.cub file
+	size_t	elm_count;
 	t_data	data;
 	t_list	*list;
 
-	// Working with the input file map.cub
-	fd = open(argv[1], O_RDONLY);
-	ft_start(&data);	//initializing data values
-	ft_check_error_save(&data, argc, argv, fd); //checking for input errors and searching for save flag
-	elm_count = ft_make_list(fd, &list);	// makes a list of lines from the input file
-	data.str = ft_getinfo(&list, elm_count);	// makes an array of lines frim the list and returns a pointer to that array
-	// Working the graphics
+
 	data.mlx = mlx_init();
-	data.mlx_win = mlx_new_window(data.mlx, W, H, "Cub3D");
+	data.mlx_win = mlx_new_window(data.mlx, W, H, "window");
+	fd = open(argv[1], O_RDONLY);
+//	ft_check_error_save(&data, argc, argv, fd);
+	ft_start(&data);
+	elm_count = ft_make_list(fd, &list);
+//	printf("%d", elm_count);
+	data.str = ft_getinfo(&list, elm_count);
 	ft_draw_map(&data);
-	mlx_hook(data.mlx_win, 2, 1L<<0, ft_draw, &data);
+//	printf("%d", mlx_key_hook(data.mlx_win, ft_move, &data));
+	mlx_hook(data.mlx_win, 2, 1L<<0, ft_move, &data);
+//	printf("%d", mlx_key_hook(data.mlx_win, ft_move, &data));
+//	mlx_key_hook(data.mlx_win, ft_close, &data);
 	mlx_loop(data.mlx);
+//	data.mlx = mlx_init();
+//	data.mlx_win = mlx_new_window(data.mlx, 640, 480, "Hello world!");
+//	mlx_hook(data.mlx_win, 2, 1L<<0, ft_close, &data);
+//  mlx_loop(data.mlx);
+
 	return (0);
 }
