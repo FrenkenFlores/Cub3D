@@ -1,6 +1,21 @@
 #include "cub3d.h"
 
 
+int		ft_numsize(int num)
+{
+	int size;
+
+	size = 1;
+	while(num / 10)
+	{
+		num = num / 10;
+		size++;
+	}
+	return(size);
+}
+
+
+
 size_t	ft_strlen(const char *str)
 {
 	size_t i;
@@ -187,8 +202,7 @@ void	ft_check_map_error(char **ptr, size_t map_loc, size_t elm_count)
 		printf("%s\n", *map++);
 }
 
-void	ft_get_map_wh(
-t_list **list, char **ptr, size_t elm_count)
+void	ft_get_map_wh(t_list **list, char **ptr, size_t elm_count)
 {
 	size_t map_loc;
 
@@ -197,6 +211,38 @@ t_list **list, char **ptr, size_t elm_count)
 //	printf("%ld", map_loc);
 //	ft_check_map_error(ptr, map_loc, elm_count);
 }
+
+void	ft_getR(char **str, t_data *data, size_t elm_count)
+{
+	size_t	j;
+	size_t i;
+	
+	i = 0;
+	while (j < elm_count)
+	{
+		i = 0;
+		if (str[j][i] == 'R')
+		{
+			i++;
+			while(str[j][i] == ' ')
+				i++;
+			data->img.width = ft_atoi(str[j] + i);
+			i += ft_numsize(data->img.width);
+			printf ("{%i}", i);
+			data->img.height = ft_atoi(str[j] + i);
+		}
+		j++;
+	}
+}
+
+
+
+
+
+
+
+
+
 
 char	**ft_getinfo(t_list **list, size_t elm_count)
 {
@@ -207,23 +253,17 @@ char	**ft_getinfo(t_list **list, size_t elm_count)
 
 	tmp = *list;
 	j = elm_count;
-//	printf("%d", elm_count);
 	ptr = (char**)malloc((sizeof(char*) * j) + 1);
 	while (tmp && j >= 0)
 	{
 		ptr[j - 1] = tmp->content;
-//		printf("%s\n", tmp->content);
 		tmp = tmp->next;
 		j--;
 	}
 	ptr[elm_count] = NULL;
-//	ft_get_map_wh(list, ptr, elm_count);
-//	while (ptr[i])
-//		printf("%s\n", ptr[i++]);
-//		printf("%d", end);
 return (ptr);
 }
-
+/*
 void	ft_draw_map(t_data *data)
 {
 	int i = 0;
@@ -312,7 +352,7 @@ int             ft_close(int keycode, t_data *data)
 	if (keycode == 'w')
     mlx_destroy_window(data->mlx, data->mlx_win);
 }
-
+*/
 int	main(int argc, char **argv)
 {
 	int fd;
@@ -320,25 +360,19 @@ int	main(int argc, char **argv)
 	t_data	data;
 	t_list	*list;
 
-
-	data.mlx = mlx_init();
-	data.mlx_win = mlx_new_window(data.mlx, W, H, "window");
-	fd = open(argv[1], O_RDONLY);
-//	ft_check_error_save(&data, argc, argv, fd);
 	ft_start(&data);
+//Working with the input file
+	fd = open(argv[1], O_RDONLY);
 	elm_count = ft_make_list(fd, &list);
-//	printf("%d", elm_count);
 	data.str = ft_getinfo(&list, elm_count);
-	ft_draw_map(&data);
-//	printf("%d", mlx_key_hook(data.mlx_win, ft_move, &data));
-	mlx_hook(data.mlx_win, 2, 1L<<0, ft_move, &data);
-//	printf("%d", mlx_key_hook(data.mlx_win, ft_move, &data));
-//	mlx_key_hook(data.mlx_win, ft_close, &data);
-	mlx_loop(data.mlx);
+	ft_getR(data.str, &data, elm_count);
+	printf("%i, %i", data.img.width, data.img.height);
+	ft_check_error_save(&data, argc, argv, fd);
+//Working with the graphics
 //	data.mlx = mlx_init();
-//	data.mlx_win = mlx_new_window(data.mlx, 640, 480, "Hello world!");
-//	mlx_hook(data.mlx_win, 2, 1L<<0, ft_close, &data);
-//  mlx_loop(data.mlx);
-
+//	data.mlx_win = mlx_new_window(data.mlx, W, H, "window");
+//	ft_draw_map(&data);
+//	mlx_hook(data.mlx_win, 2, 1L<<0, ft_move, &data);
+//	mlx_loop(data.mlx);
 	return (0);
 }
