@@ -2,6 +2,7 @@
 # define CUB3D_H
 # define PI 3.14159265359
 # define TILE_SIZE 32
+# define FOV_ANGLE 60 * PI / 180
 # include <errno.h>
 # include <stdio.h>
 # include <stdlib.h>
@@ -28,7 +29,7 @@ typedef struct s_position
 
 typedef struct ray
 {
-	double	angel;
+	double	angel; //player.rotationAngel - (FOV_ANGLE / 2);
 	double	wall_hit_x;
 	double	wall_hit_y;
 	double	distance;
@@ -94,6 +95,7 @@ typedef struct s_data
 	int			save;
 	t_conf		conf;
 	t_player	player;
+	t_ray		ray;
 	t_img		img;
 	t_img		tex[5];
 	t_sprite	*sprite;

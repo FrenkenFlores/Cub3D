@@ -39,7 +39,7 @@ int		ft_strncmp(const char *s1, const char *s2, size_t n)
 	return (*(unsigned char*)s1 - *(unsigned char*)s2);
 }
 
-void	ft_rect(t_data *data, double x, double y, int rect_width, int rect_height, int color)
+void	rect(t_data *data, double x, double y, int rect_width, int rect_height, int color)
 {
 	int i;
 	int j;
@@ -57,7 +57,7 @@ void	ft_rect(t_data *data, double x, double y, int rect_width, int rect_height, 
 	}
 }
 
-void	ft_circle(t_data *data, double x, double y, double radius, int color)
+void	circle(t_data *data, double x, double y, double radius, int color)
 {
 	int i;
 	int j;
@@ -69,14 +69,14 @@ void	ft_circle(t_data *data, double x, double y, double radius, int color)
 		while (i <= radius)
 		{
 			if (i * i <= radius * radius - j * j)
-				mlx_pixel_put(data->mlx, data->mlx_win, TILE_SIZE * x + i, TILE_SIZE * y + j, color);
+				mlx_pixel_put(data->mlx, data->mlx_win, x + i + radius, y + j - radius, color);
 			i++;
 		}
 		j++;
 	}
 }
 /*
-void	ft_line(t_data *data, double x1, double y1, double x2, double y2, int color)
+void	line(t_data *data, double x1, double y1, double x2, double y2, int color)
 {
 	double i;
 	double j;
@@ -97,7 +97,7 @@ void	ft_line(t_data *data, double x1, double y1, double x2, double y2, int color
 	}
 }
 */
-void	ft_line(t_data *data, double x1, double y1, double x2, double y2, int color)
+void	line(t_data *data, double x1, double y1, double x2, double y2, int color)
 {
 	double i;
 	double j;
@@ -118,7 +118,20 @@ void	ft_line(t_data *data, double x1, double y1, double x2, double y2, int color
 	}
 }
 
-void	ft_check_error_save(t_data *data, int argc, char **argv, int fd)
+int		is_wall(t_data *data, double x, double y)
+{
+	int map_index_x;
+	int map_index_y;
+
+	map_index_x = (int)(x / TILE_SIZE);
+	map_index_y = (int)(y / TILE_SIZE);
+	if (x < 0 || x > data->conf.win_w || y < 0 || y > data->conf.win_h)
+			return (1);
+	return (data->str[map_index_y][map_index_x] != 0 ? 1 : 0);
+}
+
+
+void	check_error_save(t_data *data, int argc, char **argv, int fd)
 {
 	if (argc < 2)
 	{
@@ -150,7 +163,7 @@ void	ft_check_error_save(t_data *data, int argc, char **argv, int fd)
 	}
 }
 
-t_list	*ft_push_back(char *str, t_list *old_list)
+t_list	*push_back(char *str, t_list *old_list)
 {
 	t_list	*new_list;
 
@@ -161,7 +174,7 @@ t_list	*ft_push_back(char *str, t_list *old_list)
 	return (new_list);
 }
 
-size_t	ft_make_list(int fd, t_list **list)
+size_t	make_list(int fd, t_list **list)
 {
 	char	*str;
 	size_t	i;
@@ -170,19 +183,56 @@ size_t	ft_make_list(int fd, t_list **list)
 	*list = NULL;
 	while(get_next_line(fd, &str))
 	{
-		*list = ft_push_back(str, *list);
+		*list = push_back(str, *list);
 		i++;
 	}
-	*list = ft_push_back(str, *list);
+	*list = push_back(str, *list);
 	i++;
 	return (i);
 }
 
-void	ft_start(t_data *data)
+void	get_player_location(t_data *data)
 {
-	data->player.x = -1;
+	int i;
+	int j;
+	j = 0;
+	while (data->str[j])
+	{
+		i = 0;
+		while (data->str[j][i])
+		{
+			if (data->str[j][i] == 'P')			
+				{
+					data->player.x = (i + 1) * TILE_SIZE;
+					data->player.y = (j + 1) * TILE_SIZE;
+					break;
+				}
+			i++;
+		}
+		j++;
+	}
+}
+
+
+void	start(t_data *data)
+{
+	data->player.x = -1; //change later
 	data->player.y = -1;
-	data->player.turn_direction = 0;
+	data->player.turn_direction = 0;   // +1 : right, -1 : left
+	data->player.walk_directoin = 0;  // +1 : forward, -1 : backward
+	data->player.radius = 16;
+	data->player.rotation_angel = PI / 2;
+	data->player.move_speed = 4.0;
+	data->player.rotation_speed = 4 * (PI / 180);
+	data->ray.angel = 0; //data->player.rotation_angel - (FOV_ANGLE / 2)
+	data->ray.wall_hit_x = 0;
+	data->ray.wall_hit_y = 0;
+	data->ray.distance = 0;
+	data->ray.point_down = 0;
+	data->ray.point_up = 0;
+	data->ray.point_left = 0;
+	data->ray.point_right = 0;
+	data->ray.ray_hit_vertical_wall = 0;
 	data->conf.map_h = -1;
 	data->conf.map_w = -1;
 	data->conf.win_h = 0;
@@ -194,7 +244,7 @@ void	ft_start(t_data *data)
 	data->save = 0;
 }
 
-int		ft_get_map(char **ptr, t_data *data, size_t elm_count)
+int		get_map(char **ptr, t_data *data, size_t elm_count)
 {
 	size_t i;
 	size_t j;
@@ -248,7 +298,7 @@ int		ft_get_map(char **ptr, t_data *data, size_t elm_count)
 	exit(EXIT_FAILURE);
 }
 
-void	ft_check_map_error(char **ptr, size_t map_loc, size_t elm_count)
+void	check_map_error(char **ptr, size_t map_loc, size_t elm_count)
 {
 	size_t i;
 	size_t j;
@@ -306,7 +356,7 @@ void	ft_check_map_error(char **ptr, size_t map_loc, size_t elm_count)
 		printf("%s\n", *map++);
 }
 
-void	ft_getR(char **str, t_data *data, size_t elm_count)
+void	getR(char **str, t_data *data, size_t elm_count)
 {
 	size_t	j;
 	size_t i;
@@ -329,7 +379,7 @@ void	ft_getR(char **str, t_data *data, size_t elm_count)
 }
 
 
-char	**ft_getinfo(t_list **list, size_t elm_count)
+char	**getinfo(t_list **list, size_t elm_count)
 {
 	char	**ptr;
 	t_list	*tmp;
@@ -410,7 +460,7 @@ void	ft_draw_map(t_data *data)
 }
 */
 
-void	ft_draw_map(t_data *data)
+void	render_map(t_data *data)
 {
 	int i = 0;
 	int j = 0;
@@ -420,46 +470,59 @@ void	ft_draw_map(t_data *data)
 		while (data->str[j][i])
 		{
 			if (data->str[j][i] == '1')
-				ft_rect(data, i, j, TILE_SIZE, TILE_SIZE, 0xFFFFFF);
+				rect(data, i, j, TILE_SIZE, TILE_SIZE, 0xFFFFFF);
 			else if (data->str[j][i] == '0')
-				ft_rect(data, i, j, TILE_SIZE, TILE_SIZE, 0x00FF00);
-			else if (data->str[j][i] == 'P')
-				ft_circle(data, i, j, 16, 0xFF88FF);
+				rect(data, i, j, TILE_SIZE, TILE_SIZE, 0x000000);
+//			else if (data->str[j][i] == 'P')
+//				circle(data, i, j, data->player.radius, 0xFF88FF);
 			i++;
 		}
 		j++;
 	}
 }
 
-void	ft_move(int keycode, t_data *data)
+void	render_player(t_data *data)
+{	
+	circle(data, data->player.x, data->player.y, data->player.radius, 0xFF88FF);
+}
+
+void	move(int keycode, t_data *data)
 {
+//	double	player_new_x;
+//	double	player_new_y;	
+
+//	player_new_y = data->player.y;
+//	player_new_x = data->player.x;
 	if (keycode == 13)
 	{
-		data->player.y += sin(data->player.turn_direction) * 4;
-		data->player.x += cos(data->player.turn_direction) * 4;
+		data->player.y += sin(data->player.turn_direction) * data->player.move_speed;
+		data->player.x += cos(data->player.turn_direction) * data->player.move_speed;
 	}
 	if (keycode == 1)
 	{
-		data->player.y -= sin(data->player.turn_direction) * 4;
-		data->player.x -= cos(data->player.turn_direction) * 4;
+		data->player.y -= sin(data->player.turn_direction) * data->player.move_speed;
+		data->player.x -= cos(data->player.turn_direction) * data->player.move_speed;
 	}
 	if (keycode == 0)
-		data->player.turn_direction -= 0.1;
+		data->player.turn_direction -= data->player.rotation_speed;
 	if (keycode == 2)
-		data->player.turn_direction += 0.1;
+		data->player.turn_direction += data->player.rotation_speed;
 	if (keycode == 53)
 		mlx_destroy_window(data->mlx, data->mlx_win);
+//	if (!(is_wall(data, player_new_x, player_new_y)))
+//	{
+//		data->player.y += sin(data->player.turn_direction) * data->player.move_speed;
+//		data->player.x += cos(data->player.turn_direction) * data->player.move_speed;
+//	}
 }
 
-void	ft_update(int keycode, t_data *data)
+void	update(int keycode, t_data *data)
 {
-//	mlx_clear_window(data->mlx, data->mlx_win);
-//	ft_move(keycode, data);
-	ft_draw_map(data);
+	mlx_clear_window(data->mlx, data->mlx_win);
+	move(keycode, data);
+	render_map(data);
+	render_player(data);
 }
-
-
-
 
 int	main(int argc, char **argv)
 {
@@ -468,29 +531,31 @@ int	main(int argc, char **argv)
 	t_data	data;
 	t_list	*list;
 
-	ft_start(&data);
+	start(&data);
 //Working with the input file
 	fd = open(argv[1], O_RDONLY);
-	ft_check_error_save(&data, argc, argv, fd);
-	elm_count = ft_make_list(fd, &list);
-	data.str = ft_getinfo(&list, elm_count);
-//	ft_getR(data.str, &data, elm_count);
-//	ft_get_map(data.str, &data, elm_count);
+	check_error_save(&data, argc, argv, fd);
+	elm_count = make_list(fd, &list);
+	data.str = getinfo(&list, elm_count);
+	get_player_location(&data);
+//	printf("%f|%f", data.player.x, data.player.y);
+//	getR(data.str, &data, elm_count);
+//	get_map(data.str, &data, elm_count);
 //	printf("%i, %i\n", data.img.width, data.img.height);
 //	printf("%s", data.conf.world_map);
 //Working with the graphics
 	data.mlx = mlx_init();
 	data.mlx_win = mlx_new_window(data.mlx, 1200, 900, "Cub3D");
 //	mlx_pixel_put(data.mlx, data.mlx_win, 111, 111, 0xFFFFFFFF);
-//	ft_rect(&data, 2, 2, TILE_SIZE, TILE_SIZE, 0x00FF00);
-//	ft_line(&data, 1, 1, 8, 8, 0x00FFA0);
-//	ft_line(&data, 1, 5, 8, 8, 0x00FFB0);
-	ft_line(&data, 50, 10, 380, 180, 0x00FFC0);
-//	ft_line(&data, 1, 1, 8, 1, 0x00FFD0);
-//	ft_line(&data, 1, 1, 1, 8, 0x00FFE0);
+//	rect(&data, 2, 2, TILE_SIZE, TILE_SIZE, 0x00FF00);
+//	line(&data, 1, 1, 8, 8, 0x00FFA0);
+//	line(&data, 1, 5, 8, 8, 0x00FFB0);
+//	line(&data, 50, 10, 380, 180, 0x00FFC0);
+//	line(&data, 1, 1, 8, 1, 0x00FFD0);
+//	line(&data, 1, 1, 1, 8, 0x00FFE0);
 
-//	ft_draw_map(&data);
-//	mlx_hook(data.mlx_win, 2, 1L<<0, ft_update, &data);
+//	render_map(&data);
+	mlx_hook(data.mlx_win, 2, 1L<<0, update, &data);
 	mlx_loop(data.mlx);
 	return (0);
 }
