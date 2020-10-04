@@ -1,8 +1,7 @@
 #ifndef CUB3D_H
 # define CUB3D_H
-# define H 600
-# define W 800
 # define PI 3.14159265359
+# define TILE_SIZE 32
 # include <errno.h>
 # include <stdio.h>
 # include <stdlib.h>
@@ -27,11 +26,29 @@ typedef struct s_position
 	double	y;
 }	t_position;
 
+typedef struct ray
+{
+	double	angel;
+	double	wall_hit_x;
+	double	wall_hit_y;
+	double	distance;
+	int		point_up;
+	int		point_down;
+	int		point_right;
+	int		point_left;
+	int		ray_hit_vertical_wall;
+}	t_ray;
+
 typedef struct s_player
 {
-	t_position	pos;
-	double		dir;
-	double		fov;
+	double		x;
+	double		y;
+	double		radius;
+	double		rotation_angel;
+	double		turn_direction;
+	double		walk_directoin;
+	double		move_speed;
+	double		rotation_speed;
 }	t_player;
 
 typedef struct s_img
