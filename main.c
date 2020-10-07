@@ -483,19 +483,30 @@ void	render_map(t_data *data)
 
 void	render_player(t_data *data)
 {	
-	circle(data, data->player.x, data->player.y, data->player.radius, 0xFF88FF);
+	circle(data, data->player.x, data->player.y, data->player.radius, 0x212121);
 }
 
 void	render_rays(t_data *data)
 {
 	int i;
+	int column_id;
+	int num_rays;
 
-	i = 0;
-	while(is_wall(data, data->player.x + i * cos(data->player.rotation_angel), data->player.y + i * sin(data->player.rotation_angel)) == 0)
+	data->ray.angel = data->player.rotation_angel - (FOV_ANGLE / 2);
+	num_rays = data->conf.win_w / STRIP_WIDTH;
+	column_id = 1;
+	while(column_id <= num_rays)
 	{
-		mlx_pixel_put(data->mlx, data->mlx_win, data->player.x + i * cos(data->player.rotation_angel), data->player.y + i * sin(data->player.rotation_angel), 0xDDDDAA);
-		i++;
+		i = 0;
+		while(is_wall(data, data->player.x + i * cos(data->ray.angel), data->player.y + i * sin(data->ray.angel)) == 0)
+		{
+			mlx_pixel_put(data->mlx, data->mlx_win, data->player.x + i * cos(data->ray.angel), data->player.y + i * sin(data->ray.angel), 0xDDDDAA);
+			i++;
+		}
+		data->ray.angel += FOV_ANGLE / num_rays;
+		column_id++;
 	}
+	
 }
 
 void	move(int keycode, t_data *data)
