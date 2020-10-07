@@ -50,7 +50,7 @@ void	rect(t_data *data, double x, double y, int rect_width, int rect_height, int
 		i = 0;
 		while (i <= rect_width)
 		{
-			mlx_pixel_put(data->mlx, data->mlx_win, TILE_SIZE * x + i, TILE_SIZE * y + j, color);
+			mlx_pixel_put(data->mlx, data->mlx_win, x + i, y + j, color);
 			i++;
 		}
 		j++;
@@ -398,67 +398,6 @@ char	**getinfo(t_list **list, size_t elm_count)
 	ptr[elm_count] = NULL;
 return (ptr);
 }
-/*
-void	ft_draw_map(t_data *data)
-{
-	int i = 0;
-	int j = 0;
-	double x = 0;
-	double y = 0;
-	t_player plr = data->player;
-	while (data->str[j])
-	{
-		i = 0;
-		while (data->str[j][i])
-		{
-			if (data->str[j][i] == '1')
-			{
-				y = j * 20;
-				while (y / (j * 20 + 20) != 1)
-				{
-					x = i * 20;
-					while (x / (i * 20 + 20) != 1)
-					{
-						mlx_pixel_put(data->mlx, data->mlx_win, x, y, 0xFFFFFF);
-						x++;
-					}
-					y++;
-				}
-			}
-			if (data->str[j][i] == 'P')
-			{
-				plr.turn_direction -= PI / 8;
-				while (plr.turn_direction <= data->player.turn_direction + PI / 8)
-				{
-					plr.x = i * 20 + data->player.x;
-					plr.y = j * 20 + data->player.y;
-					while (data->str[(int)(plr.y) / 20][(int)(plr.x) / 20] != '1')
-					{
-						plr.x += cos(plr.turn_direction);
-						plr.y += sin(plr.turn_direction);
-						mlx_pixel_put(data->mlx, data->mlx_win, plr.x, plr.y, 0x22CCFF);
-					}
-					double w1 = 180 * atan(plr.y / plr.x) / PI;
-					double w2 = 180 * atan((j * 20 + plr.y - data->player.y) / (i * 20 + plr.x - data->player.x)) / PI;
-					double w3 = 90 - w2;
-					double l = sqrt(pow((i * 20 + data->player.x - plr.x), 2) + pow((j * 20 + data->player.y - plr.y), 2));
-					double wall = 0;
-					while (wall < 5000 / l)
-					{
-//						if (w2 < 0)
-//							w2 += 2 * PI;
-						mlx_pixel_put(data->mlx, data->mlx_win, 20 * l * sin((w2 * PI / 180) - plr.turn_direction), 350 + wall, 0xAAFFAA); // l * cos(w3 * PI / 180)
-						wall += 1;
-					}
-					plr.turn_direction += 0.001;
-				}
-			}
-			i++;
-		}
-		j++;
-	}
-}
-*/
 
 void	render_map(t_data *data)
 {
@@ -470,11 +409,9 @@ void	render_map(t_data *data)
 		while (data->str[j][i])
 		{
 			if (data->str[j][i] == '1')
-				rect(data, i, j, TILE_SIZE, TILE_SIZE, 0xFFFFFF);
+				rect(data, i * TILE_SIZE, j * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0xFFFFFF);
 			else if (data->str[j][i] == '0')
 				rect(data, i, j, TILE_SIZE, TILE_SIZE, 0x000000);
-//			else if (data->str[j][i] == 'P')
-//				circle(data, i, j, data->player.radius, 0xFF88FF);
 			i++;
 		}
 		j++;
@@ -486,7 +423,7 @@ void	render_player(t_data *data)
 	circle(data, data->player.x, data->player.y, data->player.radius, 0x212121);
 }
 
-void	cast_render_rays(t_data *data)
+void	render_rays(t_data *data)
 {
 	t_ray *ray;
 	int i;
@@ -504,7 +441,7 @@ void	cast_render_rays(t_data *data)
 		ray = (t_ray *)malloc(sizeof(t_ray));
 		while(is_wall(data, data->player.x + i * cos(angel), data->player.y + i * sin(angel)) == 0)
 		{
-			mlx_pixel_put(data->mlx, data->mlx_win, data->player.x + i * cos(angel), data->player.y + i * sin(angel), 0xDDDDAA);
+//			mlx_pixel_put(data->mlx, data->mlx_win, data->player.x + i * cos(angel), data->player.y + i * sin(angel), 0xDDDDAA);
 			i++;
 		}
 		ray->distance = i;
@@ -514,9 +451,25 @@ void	cast_render_rays(t_data *data)
 		angel += FOV_ANGLE / num_rays;
 		column_id++;
 	}
+	data->conf.num_rays = num_rays;
 //	printf("ray(%i) : %f\n",15, data->rays[15]->distance);  //check #2
 }
 
+void	render_walls(t_data *data)
+{
+	int projected_wall_heigth;
+	int distance_from_player_to_projection;
+	int column_id;
+
+	column_id = 0;
+	distance_from_player_to_projection = data->conf.win_w / 2 * tan(FOV_ANGLE / 2);
+	while(column_id < data->conf.num_rays)
+	{
+		projected_wall_heigth = (TILE_SIZE * distance_from_player_to_projection) / data->rays[column_id]->distance;
+		rect(data, column_id * STRIP_WIDTH, data->conf.win_h / 2 - projected_wall_heigth / 2, STRIP_WIDTH, projected_wall_heigth, 0xFFFFFF);
+		column_id++;
+	}
+}
 
 void	move(int keycode, t_data *data)
 {
@@ -552,9 +505,10 @@ void	update(int keycode, t_data *data)
 {
 	mlx_clear_window(data->mlx, data->mlx_win);
 	move(keycode, data);
-	render_map(data);
-	cast_render_rays(data);
-	render_player(data);
+//	render_map(data);
+	render_rays(data);
+//	render_player(data);
+	render_walls(data);
 }
 
 int	main(int argc, char **argv)
