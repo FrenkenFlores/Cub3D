@@ -4,6 +4,7 @@
 # define TILE_SIZE 32
 # define FOV_ANGLE 60 * PI / 180
 # define STRIP_WIDTH 1
+# define MAP_SIZE 0.4
 # include <errno.h>
 # include <stdio.h>
 # include <stdlib.h>
