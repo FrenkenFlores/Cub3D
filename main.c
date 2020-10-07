@@ -486,6 +486,18 @@ void	render_player(t_data *data)
 	circle(data, data->player.x, data->player.y, data->player.radius, 0xFF88FF);
 }
 
+void	render_rays(t_data *data)
+{
+	int i;
+
+	i = 0;
+	while(is_wall(data, data->player.x + i * cos(data->player.rotation_angel), data->player.y + i * sin(data->player.rotation_angel)) == 0)
+	{
+		mlx_pixel_put(data->mlx, data->mlx_win, data->player.x + i * cos(data->player.rotation_angel), data->player.y + i * sin(data->player.rotation_angel), 0xDDDDAA);
+		i++;
+	}
+}
+
 void	move(int keycode, t_data *data)
 {
 	double	player_new_x;
@@ -495,18 +507,18 @@ void	move(int keycode, t_data *data)
 	player_new_x = data->player.x;
 	if (keycode == 13)
 	{
-		player_new_y += sin(data->player.turn_direction) * data->player.move_speed;
-		player_new_x += cos(data->player.turn_direction) * data->player.move_speed;
+		player_new_y += sin(data->player.rotation_angel) * data->player.move_speed;
+		player_new_x += cos(data->player.rotation_angel) * data->player.move_speed;
 	}
 	if (keycode == 1)
 	{
-		player_new_y -= sin(data->player.turn_direction) * data->player.move_speed;
-		player_new_x -= cos(data->player.turn_direction) * data->player.move_speed;
+		player_new_y -= sin(data->player.rotation_angel) * data->player.move_speed;
+		player_new_x -= cos(data->player.rotation_angel) * data->player.move_speed;
 	}
 	if (keycode == 0)
-		data->player.turn_direction -= data->player.rotation_speed;
+		data->player.rotation_angel -= data->player.rotation_speed;
 	if (keycode == 2)
-		data->player.turn_direction += data->player.rotation_speed;
+		data->player.rotation_angel += data->player.rotation_speed;
 	if (keycode == 53)
 		mlx_destroy_window(data->mlx, data->mlx_win);
 	if ((is_wall(data, player_new_x, player_new_y)) == 0)
@@ -516,8 +528,8 @@ void	move(int keycode, t_data *data)
 	}
 //	if (!(is_wall(data, player_new_x, player_new_y)))
 //	{
-//		data->player.y += sin(data->player.turn_direction) * data->player.move_speed;
-//		data->player.x += cos(data->player.turn_direction) * data->player.move_speed;
+//		data->player.y += sin(data->player.rotation_angel) * data->player.move_speed;
+//		data->player.x += cos(data->player.rotation_angel) * data->player.move_speed;
 //	}
 }
 
@@ -526,6 +538,7 @@ void	update(int keycode, t_data *data)
 	mlx_clear_window(data->mlx, data->mlx_win);
 	move(keycode, data);
 	render_map(data);
+	render_rays(data);
 	render_player(data);
 }
 
