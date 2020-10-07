@@ -3,6 +3,7 @@
 # define PI 3.14159265359
 # define TILE_SIZE 32
 # define FOV_ANGLE 60 * PI / 180
+# define STRIP_WIDTH 50
 # include <errno.h>
 # include <stdio.h>
 # include <stdlib.h>
@@ -27,7 +28,7 @@ typedef struct s_position
 	double	y;
 }	t_position;
 
-typedef struct ray
+typedef struct s_ray
 {
 	double	angel; //player.rotationAngel - (FOV_ANGLE / 2);
 	double	wall_hit_x;
@@ -38,6 +39,7 @@ typedef struct ray
 	int		point_right;
 	int		point_left;
 	int		ray_hit_vertical_wall;
+	struct s_ray	*next_ray;
 }	t_ray;
 
 typedef struct s_player
@@ -95,7 +97,7 @@ typedef struct s_data
 	int			save;
 	t_conf		conf;
 	t_player	player;
-	t_ray		ray;
+	t_ray		**rays;
 	t_img		img;
 	t_img		tex[5];
 	t_sprite	*sprite;

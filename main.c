@@ -224,7 +224,7 @@ void	start(t_data *data)
 	data->player.rotation_angel = PI / 2;
 	data->player.move_speed = 8.0;
 	data->player.rotation_speed = 15 * (PI / 180);
-	data->ray.angel = 0; //data->player.rotation_angel - (FOV_ANGLE / 2)
+/*	data->ray.angel = 0; //data->player.rotation_angel - (FOV_ANGLE / 2)
 	data->ray.wall_hit_x = 0;
 	data->ray.wall_hit_y = 0;
 	data->ray.distance = 0;
@@ -233,7 +233,7 @@ void	start(t_data *data)
 	data->ray.point_left = 0;
 	data->ray.point_right = 0;
 	data->ray.ray_hit_vertical_wall = 0;
-	data->conf.map_h = -1;
+*/	data->conf.map_h = -1;
 	data->conf.map_w = -1;
 	data->conf.win_h = 960;
 	data->conf.win_w = 1200;
@@ -486,28 +486,37 @@ void	render_player(t_data *data)
 	circle(data, data->player.x, data->player.y, data->player.radius, 0x212121);
 }
 
-void	render_rays(t_data *data)
+void	cast_render_rays(t_data *data)
 {
+	t_ray *ray;
 	int i;
 	int column_id;
 	int num_rays;
+	double angel;
 
-	data->ray.angel = data->player.rotation_angel - (FOV_ANGLE / 2);
+	column_id = 0;
+	angel = data->player.rotation_angel - (FOV_ANGLE / 2);
 	num_rays = data->conf.win_w / STRIP_WIDTH;
-	column_id = 1;
-	while(column_id <= num_rays)
+	data->rays = (t_ray **)malloc(sizeof(t_ray *) * num_rays);
+	while(column_id < num_rays)
 	{
 		i = 0;
-		while(is_wall(data, data->player.x + i * cos(data->ray.angel), data->player.y + i * sin(data->ray.angel)) == 0)
+		ray = (t_ray *)malloc(sizeof(t_ray));
+		while(is_wall(data, data->player.x + i * cos(angel), data->player.y + i * sin(angel)) == 0)
 		{
-			mlx_pixel_put(data->mlx, data->mlx_win, data->player.x + i * cos(data->ray.angel), data->player.y + i * sin(data->ray.angel), 0xDDDDAA);
+			mlx_pixel_put(data->mlx, data->mlx_win, data->player.x + i * cos(angel), data->player.y + i * sin(angel), 0xDDDDAA);
 			i++;
 		}
-		data->ray.angel += FOV_ANGLE / num_rays;
+		ray->distance = i;
+		ray->angel = angel;
+		data->rays[column_id] = ray;
+//		printf("ray(%i) : %f\n",column_id, data->rays[column_id]->distance);		// check #1
+		angel += FOV_ANGLE / num_rays;
 		column_id++;
 	}
-	
+//	printf("ray(%i) : %f\n",15, data->rays[15]->distance);  //check #2
 }
+
 
 void	move(int keycode, t_data *data)
 {
@@ -537,11 +546,6 @@ void	move(int keycode, t_data *data)
 		data->player.y = player_new_y;
 		data->player.x = player_new_x;
 	}
-//	if (!(is_wall(data, player_new_x, player_new_y)))
-//	{
-//		data->player.y += sin(data->player.rotation_angel) * data->player.move_speed;
-//		data->player.x += cos(data->player.rotation_angel) * data->player.move_speed;
-//	}
 }
 
 void	update(int keycode, t_data *data)
@@ -549,7 +553,7 @@ void	update(int keycode, t_data *data)
 	mlx_clear_window(data->mlx, data->mlx_win);
 	move(keycode, data);
 	render_map(data);
-	render_rays(data);
+	cast_render_rays(data);
 	render_player(data);
 }
 
