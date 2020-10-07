@@ -69,7 +69,7 @@ void	circle(t_data *data, double x, double y, double radius, int color)
 		while (i <= radius)
 		{
 			if (i * i <= radius * radius - j * j)
-				mlx_pixel_put(data->mlx, data->mlx_win, x + i + radius, y + j - radius, color);
+				mlx_pixel_put(data->mlx, data->mlx_win, x + i, y + j, color);
 			i++;
 		}
 		j++;
@@ -126,8 +126,8 @@ int		is_wall(t_data *data, double x, double y)
 	map_index_x = (int)(x / TILE_SIZE);
 	map_index_y = (int)(y / TILE_SIZE);
 	if (x < 0 || x > data->conf.win_w || y < 0 || y > data->conf.win_h)
-			return (1);
-	return (data->str[map_index_y][map_index_x] != 0 ? 1 : 0);
+			return (0);
+	return (data->str[map_index_y][map_index_x] == '1' ? 1 : 0);
 }
 
 
@@ -222,8 +222,8 @@ void	start(t_data *data)
 	data->player.walk_directoin = 0;  // +1 : forward, -1 : backward
 	data->player.radius = 16;
 	data->player.rotation_angel = PI / 2;
-	data->player.move_speed = 4.0;
-	data->player.rotation_speed = 4 * (PI / 180);
+	data->player.move_speed = 8.0;
+	data->player.rotation_speed = 15 * (PI / 180);
 	data->ray.angel = 0; //data->player.rotation_angel - (FOV_ANGLE / 2)
 	data->ray.wall_hit_x = 0;
 	data->ray.wall_hit_y = 0;
@@ -235,8 +235,8 @@ void	start(t_data *data)
 	data->ray.ray_hit_vertical_wall = 0;
 	data->conf.map_h = -1;
 	data->conf.map_w = -1;
-	data->conf.win_h = 0;
-	data->conf.win_w = 0;
+	data->conf.win_h = 960;
+	data->conf.win_w = 1200;
 	data->conf.world_map = NULL;
 	data->conf.floor_color = -1;
 	data->conf.cell_color = -1;
@@ -488,20 +488,20 @@ void	render_player(t_data *data)
 
 void	move(int keycode, t_data *data)
 {
-//	double	player_new_x;
-//	double	player_new_y;	
+	double	player_new_x;
+	double	player_new_y;	
 
-//	player_new_y = data->player.y;
-//	player_new_x = data->player.x;
+	player_new_y = data->player.y;
+	player_new_x = data->player.x;
 	if (keycode == 13)
 	{
-		data->player.y += sin(data->player.turn_direction) * data->player.move_speed;
-		data->player.x += cos(data->player.turn_direction) * data->player.move_speed;
+		player_new_y += sin(data->player.turn_direction) * data->player.move_speed;
+		player_new_x += cos(data->player.turn_direction) * data->player.move_speed;
 	}
 	if (keycode == 1)
 	{
-		data->player.y -= sin(data->player.turn_direction) * data->player.move_speed;
-		data->player.x -= cos(data->player.turn_direction) * data->player.move_speed;
+		player_new_y -= sin(data->player.turn_direction) * data->player.move_speed;
+		player_new_x -= cos(data->player.turn_direction) * data->player.move_speed;
 	}
 	if (keycode == 0)
 		data->player.turn_direction -= data->player.rotation_speed;
@@ -509,6 +509,11 @@ void	move(int keycode, t_data *data)
 		data->player.turn_direction += data->player.rotation_speed;
 	if (keycode == 53)
 		mlx_destroy_window(data->mlx, data->mlx_win);
+	if ((is_wall(data, player_new_x, player_new_y)) == 0)
+	{
+		data->player.y = player_new_y;
+		data->player.x = player_new_x;
+	}
 //	if (!(is_wall(data, player_new_x, player_new_y)))
 //	{
 //		data->player.y += sin(data->player.turn_direction) * data->player.move_speed;
@@ -545,7 +550,7 @@ int	main(int argc, char **argv)
 //	printf("%s", data.conf.world_map);
 //Working with the graphics
 	data.mlx = mlx_init();
-	data.mlx_win = mlx_new_window(data.mlx, 1200, 900, "Cub3D");
+	data.mlx_win = mlx_new_window(data.mlx, data.conf.win_w, data.conf.win_h, "Cub3D");
 //	mlx_pixel_put(data.mlx, data.mlx_win, 111, 111, 0xFFFFFFFF);
 //	rect(&data, 2, 2, TILE_SIZE, TILE_SIZE, 0x00FF00);
 //	line(&data, 1, 1, 8, 8, 0x00FFA0);
