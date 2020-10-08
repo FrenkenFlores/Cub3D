@@ -452,6 +452,20 @@ void	ray_pointer(t_ray *ray)
 		ray->point_right = !ray->point_left;
 }
 
+void	ray_conf(t_ray *ray, t_data *data)
+{
+	ray->foundHorWallHit = 0;
+	ray->foundVertWallHit = 0;
+	ray->yintercept = (int)(data->player.y / TILE_SIZE) * TILE_SIZE;
+	ray->yintercept += (ray->point_down) ? TILE_SIZE : 0;
+	ray->xintercept = data->player.x + (ray->yintercept - data->player.y) / tan(ray->angel);
+	ray->ystep = TILE_SIZE;
+	ray->ystep *= (ray->point_up) ? -1 : 1;
+	ray->xstep = TILE_SIZE / tan(ray->angel);
+	ray->xstep *= (ray->point_left && ray->xstep > 0) ? -1 : 1;
+	ray->xstep *= (ray->point_right && ray->xstep < 0) ? -1 : 1;
+}
+
 void	render_rays(t_data *data)
 {
 	t_ray *ray;
@@ -473,6 +487,11 @@ void	render_rays(t_data *data)
 		ray = (t_ray *)malloc(sizeof(t_ray));
 
 		
+
+
+
+		
+
 		while(is_wall(data, data->player.x + i * cos(angel), data->player.y + i * sin(angel)) == 0)
 		{
 			mlx_pixel_put(data->mlx, data->mlx_win, (data->player.x + i * cos(angel)) * MAP_SIZE, (data->player.y + i * sin(angel)) * MAP_SIZE, 0xDDDDAA);

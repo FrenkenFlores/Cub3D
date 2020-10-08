@@ -40,6 +40,12 @@ typedef struct s_ray
 	int		point_right;
 	int		point_left;
 	int		ray_hit_vertical_wall;
+	int foundHorWallHit;
+	int foundVertWallHit;
+	double xstep;	// delta x
+	double ystep;	// delta y
+	int xintercept;	// closest interception with the grid
+	int yintercept;
 //	struct s_ray	*next_ray;
 }	t_ray;
 
