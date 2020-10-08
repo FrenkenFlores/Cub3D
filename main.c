@@ -14,11 +14,11 @@ int		ft_numsize(int num)
 	return(size);
 }
 
-int normalize_angle(int angle)
+double normalize_angle(double angle)
 {
 	while (angle > 2 * PI)
-		angle = angle / 2 * PI;
-	if (angle < 0)
+		angle = angle - 2 * PI;
+	while (angle < 0)
 		angle = angle + (2 * PI);
 	return (angle);
 }
@@ -444,6 +444,14 @@ void	free_rays_array(t_data *data)
 	free (data->rays);
 }
 
+void	ray_pointer(t_ray *ray)
+{
+		ray->point_down = (ray->angel >= 0 && ray->angel <= PI) ? 1 : 0;
+		ray->point_up = !ray->point_down;
+		ray->point_left = (ray->angel >= PI / 2 && ray->angel <= 3 * PI / 2) ? 1 : 0;
+		ray->point_right = !ray->point_left;
+}
+
 void	render_rays(t_data *data)
 {
 	t_ray *ray;
@@ -453,7 +461,7 @@ void	render_rays(t_data *data)
 	double angel;
 
 	column_id = 0;
-	angel = data->player.rotation_angel - (FOV_ANGLE / 2);
+	angel = normalize_angle(data->player.rotation_angel - (FOV_ANGLE / 2));
 	num_rays = data->conf.win_w / STRIP_WIDTH;
 	if (data->rays)
 		free_rays_array(data);
@@ -463,14 +471,19 @@ void	render_rays(t_data *data)
 	{
 		i = 0;
 		ray = (t_ray *)malloc(sizeof(t_ray));
+
+		
 		while(is_wall(data, data->player.x + i * cos(angel), data->player.y + i * sin(angel)) == 0)
 		{
 			mlx_pixel_put(data->mlx, data->mlx_win, (data->player.x + i * cos(angel)) * MAP_SIZE, (data->player.y + i * sin(angel)) * MAP_SIZE, 0xDDDDAA);
 			i++;
 		}
+
 		ray->distance = i;
-		ray->angel = angel;
+		ray->angel = normalize_angle(angel);
+		ray_pointer(ray);
 		data->rays[column_id] = ray;
+//		printf("#%i#|angle %f|up %i|down %i|left %i|right %i\n",column_id, data->rays[column_id]->angel, data->rays[column_id]->point_up, data->rays[column_id]->point_down, data->rays[column_id]->point_left, data->rays[column_id]->point_right);
 //		printf("ray(%i) : %f\n",column_id, data->rays[column_id]->distance);		// check #1
 		angel += FOV_ANGLE / num_rays;
 		column_id++;
@@ -540,7 +553,7 @@ void	update(int keycode, t_data *data)
 	render_map(data);
 	render_rays(data);
 	render_player(data);
-	render_walls(data);
+//	render_walls(data);
 }
 
 int	main(int argc, char **argv)
