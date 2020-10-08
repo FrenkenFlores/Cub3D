@@ -243,8 +243,8 @@ void	start(t_data *data)
 	data->ray.ray_hit_vertical_wall = 0;
 */	data->conf.map_h = -1;
 	data->conf.map_w = -1;
-	data->conf.win_h = 960;
-	data->conf.win_w = 1200;
+	data->conf.win_h = 640;
+	data->conf.win_w = 1000;
 	data->conf.world_map = NULL;
 	data->conf.floor_color = -1;
 	data->conf.cell_color = -1;
@@ -481,6 +481,12 @@ void	render_walls(t_data *data)
 	}
 }
 
+int		mlx_close(t_data *data)
+{
+	mlx_destroy_window(data->mlx, data->mlx_win);
+	exit (0);
+}
+
 void	move(int keycode, t_data *data)
 {
 	double	player_new_x;
@@ -503,7 +509,7 @@ void	move(int keycode, t_data *data)
 	if (keycode == 2)
 		data->player.rotation_angel += data->player.rotation_speed;
 	if (keycode == 53)
-		mlx_destroy_window(data->mlx, data->mlx_win);
+		mlx_close(data);
 	if ((is_wall(data, player_new_x, player_new_y)) == 0)
 	{
 		data->player.y = player_new_y;
