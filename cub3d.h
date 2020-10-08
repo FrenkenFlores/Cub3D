@@ -40,7 +40,7 @@ typedef struct s_ray
 	int		point_right;
 	int		point_left;
 	int		ray_hit_vertical_wall;
-	struct s_ray	*next_ray;
+//	struct s_ray	*next_ray;
 }	t_ray;
 
 typedef struct s_player

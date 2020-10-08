@@ -431,6 +431,19 @@ void	render_player(t_data *data)
 	circle(data, data->player.x * MAP_SIZE, data->player.y * MAP_SIZE, data->player.radius * MAP_SIZE, 0x212121);
 }
 
+void	free_rays_array(t_data *data)
+{
+	int i;
+
+	i = 0;
+	while (i < data->conf.num_rays && data->rays[i])
+	{
+		free (data->rays[i]);
+		i++;
+	}
+	free (data->rays);
+}
+
 void	render_rays(t_data *data)
 {
 	t_ray *ray;
@@ -442,7 +455,10 @@ void	render_rays(t_data *data)
 	column_id = 0;
 	angel = data->player.rotation_angel - (FOV_ANGLE / 2);
 	num_rays = data->conf.win_w / STRIP_WIDTH;
-	data->rays = (t_ray **)malloc(sizeof(t_ray *) * num_rays);
+	if (data->rays)
+		free_rays_array(data);
+	if (!(data->rays = (t_ray **)malloc(sizeof(t_ray *) * num_rays)))
+		exit(EXIT_FAILURE);
 	while(column_id < num_rays)
 	{
 		i = 0;
@@ -481,6 +497,12 @@ void	render_walls(t_data *data)
 	}
 }
 
+void	mlx_close(t_data *data)
+{
+	mlx_destroy_window(data->mlx, data->mlx_win);
+	exit(EXIT_SUCCESS);
+}
+
 void	move(int keycode, t_data *data)
 {
 	double	player_new_x;
@@ -503,7 +525,7 @@ void	move(int keycode, t_data *data)
 	if (keycode == 2)
 		data->player.rotation_angel += data->player.rotation_speed;
 	if (keycode == 53)
-		mlx_destroy_window(data->mlx, data->mlx_win);
+		mlx_close(data);
 	if ((is_wall(data, player_new_x, player_new_y)) == 0)
 	{
 		data->player.y = player_new_y;
