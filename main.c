@@ -113,13 +113,36 @@ void	line(t_data *data, double x1, double y1, double x2, double y2, int color)
 
 	alpha = (y2 - y1) / (x2 - x1);
 	j = 0;
-	while (j <= abs(y2 - y1))
+	while ((j <= y2 - y1) && y2 > y1)
 	{
 		i = 0;
-		while (i <= abs(x2 - x1))
+		while ((i <= x2 - x1) && x2 > x1)
 		{
-			if (j >= alpha * i - 0.5 && j <= alpha * i + 0.5)
+			if (j >= alpha * i - 1 && j <= alpha * i + 1)
 				mlx_pixel_put(data->mlx, data->mlx_win, x1 + i, y1 + j, color);
+			i++;
+		}
+		while ((i <= x1 - x2) && x2 < x1)
+		{
+			if (j >= alpha * i - 1 && j <= alpha * i + 1)
+				mlx_pixel_put(data->mlx, data->mlx_win, x1 - i, y1 + j, color);
+			i++;
+		}
+		j++;
+	}
+	while ((j <= y1 - y2) && y2 < y1)
+	{
+		i = 0;
+		while ((i <= x2 - x1) && x2 > x1)
+		{
+			if (j >= alpha * i - 1 && j <= alpha * i + 1)
+				mlx_pixel_put(data->mlx, data->mlx_win, x1 + i, y1 - j, color);
+			i++;
+		}
+		while ((i <= x1 - x2) && x2 < x1)
+		{
+			if (j >= alpha * i - 1 && j <= alpha * i + 1)
+				mlx_pixel_put(data->mlx, data->mlx_win, x1 - i, y1 - j, color);
 			i++;
 		}
 		j++;
@@ -134,7 +157,7 @@ int		is_wall(t_data *data, double x, double y)
 	map_index_x = (int)(x / TILE_SIZE);
 	map_index_y = (int)(y / TILE_SIZE);
 	if (x < 0 || x > data->conf.win_w || y < 0 || y > data->conf.win_h)
-			return (0);
+			return (1);
 	return (data->str[map_index_y][map_index_x] == '1' ? 1 : 0);
 }
 
@@ -500,7 +523,7 @@ void	ray_horz_hit(t_ray *ray, t_data *data)
 	ray->next_horz_y = ray->y_intercept;
 	ray->horz_wall_hit_x = 0;
 	ray->horz_wall_hit_y = 0;
-	while (ray->found_horz_wall_hit == 0)
+/*	while (ray->found_horz_wall_hit == 0)
 	{
 		if (is_wall(data, ray->next_horz_x - (ray->point_left ? 1 : 0), ray->next_horz_y) == 1)
 		{
@@ -515,7 +538,7 @@ void	ray_horz_hit(t_ray *ray, t_data *data)
 			ray->next_horz_y += ray->y_step;
 		}	
 	}
-	line(data, data->player.x, data->player.y, ray->horz_wall_hit_x, ray->horz_wall_hit_y, 0x00FF00);
+*/	line(data, data->player.x, data->player.y, ray->horz_wall_hit_x, ray->horz_wall_hit_y, 0x00FF00);
 }
 
 void	render_rays(t_data *data)
@@ -656,12 +679,12 @@ int	main(int argc, char **argv)
 //	rect(&data, 2, 2, TILE_SIZE, TILE_SIZE, 0x00FF00);
 //	line(&data, 1, 1, 8, 8, 0x00FFA0);
 //	line(&data, 1, 5, 8, 8, 0x00FFB0);
-//	line(&data, 50, 10, 380, 180, 0x00FFC0);
+//	line(&data, 300, 200, 3, 2, 0x00FFC0);
 //	line(&data, 1, 1, 8, 1, 0x00FFD0);
 //	line(&data, 1, 1, 1, 8, 0x00FFE0);
 
 //	render_map(&data);
-	mlx_hook(data.mlx_win, 2, 1L<<0, update, &data);
+//	mlx_hook(data.mlx_win, 2, 1L<<0, update, &data);
 	mlx_loop(data.mlx);
 	return (0);
 }
