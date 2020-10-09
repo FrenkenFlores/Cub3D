@@ -31,7 +31,7 @@ typedef struct s_position
 
 typedef struct s_ray
 {
-	double	angel; //player.rotationAngel - (FOV_ANGLE / 2);
+	double long	angel; //player.rotationAngel - (FOV_ANGLE / 2);
 	double	wall_hit_x;
 	double	wall_hit_y;
 	double	horz_wall_hit_x;
