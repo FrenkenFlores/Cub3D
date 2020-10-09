@@ -452,18 +452,70 @@ void	ray_pointer(t_ray *ray)
 		ray->point_right = !ray->point_left;
 }
 
-void	ray_conf(t_ray *ray, t_data *data)
+void	ray_vert_hit(t_ray *ray, t_data *data)
 {
-	ray->foundHorWallHit = 0;
-	ray->foundVertWallHit = 0;
-	ray->yintercept = (int)(data->player.y / TILE_SIZE) * TILE_SIZE;
-	ray->yintercept += (ray->point_down) ? TILE_SIZE : 0;
-	ray->xintercept = data->player.x + (ray->yintercept - data->player.y) / tan(ray->angel);
-	ray->ystep = TILE_SIZE;
-	ray->ystep *= (ray->point_up) ? -1 : 1;
-	ray->xstep = TILE_SIZE / tan(ray->angel);
-	ray->xstep *= (ray->point_left && ray->xstep > 0) ? -1 : 1;
-	ray->xstep *= (ray->point_right && ray->xstep < 0) ? -1 : 1;
+	ray->found_vert_wall_hit = 0;
+	ray->y_intercept = (int)(data->player.y / TILE_SIZE) * TILE_SIZE;
+	ray->y_intercept += (ray->point_down) ? TILE_SIZE : 0;
+	ray->x_intercept = data->player.x + (ray->y_intercept - data->player.y) / tan(ray->angel);
+	ray->y_step = TILE_SIZE;
+	ray->y_step *= (ray->point_up) ? -1 : 1;
+	ray->x_step = TILE_SIZE / tan(ray->angel);
+	ray->x_step *= (ray->point_left && ray->x_step > 0) ? -1 : 1;
+	ray->x_step *= (ray->point_right && ray->x_step < 0) ? -1 : 1;
+	ray->next_vert_x = ray->x_intercept;
+	ray->next_vert_y = ray->y_intercept;
+	ray->vert_wall_hit_x = 0;
+	ray->vert_wall_hit_y = 0;
+	while (ray->found_vert_wall_hit == 0)
+	{
+		if (is_wall(data, ray->next_vert_x, ray->next_vert_y - (ray->point_up ? 1 : 0)) == 1)
+		{
+			ray->vert_wall_hit_x = ray->next_vert_x;
+			ray->vert_wall_hit_y = ray->next_vert_y;
+			ray->found_vert_wall_hit = 1;
+			break;
+		}
+		else
+		{
+			ray->next_vert_x += ray->x_step;
+			ray->next_vert_y += ray->y_step;
+		}	
+	}
+	line(data, data->player.x, data->player.y, ray->vert_wall_hit_x, ray->vert_wall_hit_y, 0xFF0000);
+}
+
+void	ray_horz_hit(t_ray *ray, t_data *data)
+{
+	ray->found_horz_wall_hit = 0;
+	ray->x_intercept = (int)(data->player.x / TILE_SIZE) * TILE_SIZE;
+	ray->x_intercept += (ray->point_right) ? TILE_SIZE : 0;
+	ray->y_intercept = data->player.y + (ray->x_intercept - data->player.x) * tan(ray->angel);
+	ray->x_step = TILE_SIZE;
+	ray->x_step *= (ray->point_left) ? -1 : 1;
+	ray->y_step = TILE_SIZE * tan(ray->angel);
+	ray->y_step *= (ray->point_up && ray->y_step > 0) ? -1 : 1;
+	ray->y_step *= (ray->point_down && ray->y_step < 0) ? -1 : 1;
+	ray->next_horz_x = ray->x_intercept;
+	ray->next_horz_y = ray->y_intercept;
+	ray->horz_wall_hit_x = 0;
+	ray->horz_wall_hit_y = 0;
+	while (ray->found_horz_wall_hit == 0)
+	{
+		if (is_wall(data, ray->next_horz_x - (ray->point_left ? 1 : 0), ray->next_horz_y) == 1)
+		{
+			ray->horz_wall_hit_x = ray->next_horz_x;
+			ray->horz_wall_hit_y = ray->next_horz_y;
+			ray->found_horz_wall_hit = 1;
+			break;
+		}
+		else
+		{
+			ray->next_horz_x += ray->x_step;
+			ray->next_horz_y += ray->y_step;
+		}	
+	}
+	line(data, data->player.x, data->player.y, ray->horz_wall_hit_x, ray->horz_wall_hit_y, 0x00FF00);
 }
 
 void	render_rays(t_data *data)
@@ -475,7 +527,7 @@ void	render_rays(t_data *data)
 	double angel;
 
 	column_id = 0;
-	angel = normalize_angle(data->player.rotation_angel - (FOV_ANGLE / 2));
+	angel = data->player.rotation_angel - (FOV_ANGLE / 2);
 	num_rays = data->conf.win_w / STRIP_WIDTH;
 	if (data->rays)
 		free_rays_array(data);
@@ -485,22 +537,25 @@ void	render_rays(t_data *data)
 	{
 		i = 0;
 		ray = (t_ray *)malloc(sizeof(t_ray));
-
+		ray->angel = normalize_angle(angel);
+		ray_pointer(ray);
+		ray_horz_hit(ray, data);
+		ray_vert_hit(ray, data);
 		
 
 
 
 		
-
+/*
 		while(is_wall(data, data->player.x + i * cos(angel), data->player.y + i * sin(angel)) == 0)
 		{
 			mlx_pixel_put(data->mlx, data->mlx_win, (data->player.x + i * cos(angel)) * MAP_SIZE, (data->player.y + i * sin(angel)) * MAP_SIZE, 0xDDDDAA);
 			i++;
 		}
-
+*/
 		ray->distance = i;
-		ray->angel = normalize_angle(angel);
-		ray_pointer(ray);
+//		ray->angel = normalize_angle(angel);
+//		ray_pointer(ray);
 		data->rays[column_id] = ray;
 //		printf("#%i#|angle %f|up %i|down %i|left %i|right %i\n",column_id, data->rays[column_id]->angel, data->rays[column_id]->point_up, data->rays[column_id]->point_down, data->rays[column_id]->point_left, data->rays[column_id]->point_right);
 //		printf("ray(%i) : %f\n",column_id, data->rays[column_id]->distance);		// check #1

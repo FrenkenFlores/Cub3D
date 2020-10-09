@@ -3,7 +3,7 @@
 # define PI 3.14159265359
 # define TILE_SIZE 32
 # define FOV_ANGLE 60 * PI / 180
-# define STRIP_WIDTH 300
+# define STRIP_WIDTH 100
 # define MAP_SIZE 1
 # include <errno.h>
 # include <stdio.h>
@@ -34,18 +34,27 @@ typedef struct s_ray
 	double	angel; //player.rotationAngel - (FOV_ANGLE / 2);
 	double	wall_hit_x;
 	double	wall_hit_y;
+	double	horz_wall_hit_x;
+	double	horz_wall_hit_y;
+	double	vert_wall_hit_x;
+	double	vert_wall_hit_y;
 	double	distance;
 	int		point_up;
 	int		point_down;
 	int		point_right;
 	int		point_left;
 	int		ray_hit_vertical_wall;
-	int foundHorWallHit;
-	int foundVertWallHit;
-	double xstep;	// delta x
-	double ystep;	// delta y
-	int xintercept;	// closest interception with the grid
-	int yintercept;
+	int		found_horz_wall_hit;
+	int 	found_vert_wall_hit;
+	double	x_step;	// delta x
+	double	y_step;	// delta y
+	double		x_intercept;	// closest interception with the grid
+	double 	y_intercept;
+	double 	next_horz_y;
+	double 	next_horz_x;
+	double 	next_vert_y;
+	double 	next_vert_x;
+
 //	struct s_ray	*next_ray;
 }	t_ray;
 
