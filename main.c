@@ -566,7 +566,8 @@ int	ray_horz_hit(t_ray *ray, t_data *data)
 	return (1);
 }
 
-void	render_rays(t_data *data)
+
+void	render_rays_horz(t_data *data)
 {
 	t_ray *ray;
 	double i;
@@ -576,8 +577,7 @@ void	render_rays(t_data *data)
 
 	column_id = 0;
 	angel = data->player.rotation_angel - (FOV_ANGLE / 2);
-//	printf("%f|%f\n", normalize_angle(angel), tanl(normalize_angle(angel)));
-	num_rays = data->conf.win_w / STRIP_WIDTH;
+	num_rays = data->conf.win_w / STRIP_WIDTH * 2;
 	if (data->rays)
 		free_rays_array(data);
 	if (!(data->rays = (t_ray **)malloc(sizeof(t_ray *) * num_rays)))
@@ -589,26 +589,57 @@ void	render_rays(t_data *data)
 			exit(EXIT_FAILURE);
 		ray->angel = normalize_angle(angel);
 		ray_pointer(ray);
-		if (ray_horz_hit(ray, data) == -1 && ray_vert_hit(ray, data) == -1)
+		if (ray_horz_hit(ray, data) == -1)
 		{
 			num_rays--;
 			free (ray);
 			continue;
 		}
-//		if (ray_vert_hit(ray, data) == -1)
-//		{
-//			num_rays--;
-//			free (ray);
-//			continue;
-//		}
-		ray->wall_hit_x = (ray->vert_wall_hit_x < ray->horz_wall_hit_x) ? ray->horz_wall_hit_x : ray->vert_wall_hit_x;
-		ray->wall_hit_y = (ray->vert_wall_hit_y < ray->horz_wall_hit_y) ? ray->horz_wall_hit_y : ray->vert_wall_hit_y;
-		printf("%f|%f\n", ray->wall_hit_x, ray->wall_hit_y);
-		line(data, data->player.x, data->player.y, ray->wall_hit_x, ray->wall_hit_y, 0xFFFF00);
+		printf("%i >  %f, %f\n", column_id, ray->horz_wall_hit_x, ray->horz_wall_hit_y);
+		line(data, data->player.x, data->player.y, ray->horz_wall_hit_x, ray->horz_wall_hit_y, 0x00FF00);
 		data->rays[column_id] = ray;
 		angel += FOV_ANGLE / num_rays;
 		column_id++;
 	}
+	data->conf.num_rays = num_rays;
+}
+
+
+
+void	render_rays_vert(t_data *data)
+{
+	t_ray *ray;
+	double i;
+	int column_id;
+	int num_rays;
+	float angel;
+
+	column_id = 0;
+	angel = data->player.rotation_angel - (FOV_ANGLE / 2);
+	num_rays = data->conf.win_w / STRIP_WIDTH * 2;
+	if (data->rays)
+		free_rays_array(data);
+	if (!(data->rays = (t_ray **)malloc(sizeof(t_ray *) * num_rays)))
+		exit(EXIT_FAILURE);
+	while(column_id < num_rays)
+	{
+		i = 0;
+		if(!(ray = (t_ray *)malloc(sizeof(t_ray))))
+			exit(EXIT_FAILURE);
+		ray->angel = normalize_angle(angel);
+		ray_pointer(ray);
+		if (ray_vert_hit(ray, data) == -1)
+		{
+			num_rays--;
+			free (ray);
+			continue;
+		}
+		data->rays[column_id] = ray;
+		angel += FOV_ANGLE / num_rays;
+		column_id++;
+	}
+
+
 	data->conf.num_rays = num_rays;
 }
 

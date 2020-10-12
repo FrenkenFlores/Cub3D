@@ -3,7 +3,7 @@
 # define PI 3.14159265359
 # define TILE_SIZE 32
 # define FOV_ANGLE 60 * PI / 180
-# define STRIP_WIDTH 30
+# define STRIP_WIDTH 1
 # define MAP_SIZE 1
 # include <errno.h>
 # include <stdio.h>
@@ -39,6 +39,8 @@ typedef struct s_ray
 	double	vert_wall_hit_x;
 	double	vert_wall_hit_y;
 	double	distance;
+	double	horz_distance;
+	double	vert_distance;
 	int		point_up;
 	int		point_down;
 	int		point_right;
