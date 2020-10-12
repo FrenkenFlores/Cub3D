@@ -462,18 +462,32 @@ void	render_player(t_data *data)
 	circle(data, data->player.x * MAP_SIZE, data->player.y * MAP_SIZE, data->player.radius * MAP_SIZE, 0x212121);
 }
 
-void	free_rays_array(t_data *data)
+void	free_vert_rays_array(t_data *data)
 {
 	int i;
 
 	i = 0;
-	while (i < data->conf.num_rays)
+	while (i < data->conf.vert_num_rays)
 	{
-		if (data->rays[i])
-			free (data->rays[i]);
+		if (data->rays_vert[i])
+			free (data->rays_vert[i]);
 		i++;
 	}
-	free (data->rays);
+	free (data->rays_vert);
+}
+
+void	free_horz_rays_array(t_data *data)
+{
+	int i;
+
+	i = 0;
+	while (i < data->conf.horz_num_rays)
+	{
+		if (data->rays_horz[i])
+			free (data->rays_horz[i]);
+		i++;
+	}
+	free (data->rays_horz);
 }
 
 void	ray_pointer(t_ray *ray)
@@ -578,9 +592,9 @@ void	render_rays_horz(t_data *data)
 	column_id = 0;
 	angel = data->player.rotation_angel - (FOV_ANGLE / 2);
 	num_rays = data->conf.win_w / STRIP_WIDTH * 2;
-	if (data->rays)
-		free_rays_array(data);
-	if (!(data->rays = (t_ray **)malloc(sizeof(t_ray *) * num_rays)))
+	if (data->rays_horz)
+		free_horz_rays_array(data);
+	if (!(data->rays_horz = (t_ray **)malloc(sizeof(t_ray *) * num_rays)))
 		exit(EXIT_FAILURE);
 	while(column_id < num_rays)
 	{
@@ -595,13 +609,13 @@ void	render_rays_horz(t_data *data)
 			free (ray);
 			continue;
 		}
-		printf("%i >  %f, %f\n", column_id, ray->horz_wall_hit_x, ray->horz_wall_hit_y);
-		line(data, data->player.x, data->player.y, ray->horz_wall_hit_x, ray->horz_wall_hit_y, 0x00FF00);
-		data->rays[column_id] = ray;
+		printf("%i H %f, %f\n", column_id, ray->horz_wall_hit_x, ray->horz_wall_hit_y);
+		line(data, data->player.x, data->player.y, ray->horz_wall_hit_x, ray->horz_wall_hit_y, 0x0000FF);
+		data->rays_horz[column_id] = ray;
 		angel += FOV_ANGLE / num_rays;
 		column_id++;
 	}
-	data->conf.num_rays = num_rays;
+	data->conf.horz_num_rays = column_id;
 }
 
 
@@ -617,9 +631,9 @@ void	render_rays_vert(t_data *data)
 	column_id = 0;
 	angel = data->player.rotation_angel - (FOV_ANGLE / 2);
 	num_rays = data->conf.win_w / STRIP_WIDTH * 2;
-	if (data->rays)
-		free_rays_array(data);
-	if (!(data->rays = (t_ray **)malloc(sizeof(t_ray *) * num_rays)))
+	if (data->rays_vert)
+		free_vert_rays_array(data);
+	if (!(data->rays_vert = (t_ray **)malloc(sizeof(t_ray *) * num_rays)))
 		exit(EXIT_FAILURE);
 	while(column_id < num_rays)
 	{
@@ -634,13 +648,13 @@ void	render_rays_vert(t_data *data)
 			free (ray);
 			continue;
 		}
-		data->rays[column_id] = ray;
+		printf("%i V %f, %f\n", column_id, ray->vert_wall_hit_x, ray->vert_wall_hit_y);
+		line(data, data->player.x, data->player.y, ray->vert_wall_hit_x, ray->vert_wall_hit_y, 0xFF0000);
+		data->rays_vert[column_id] = ray;
 		angel += FOV_ANGLE / num_rays;
 		column_id++;
 	}
-
-
-	data->conf.num_rays = num_rays;
+	data->conf.vert_num_rays = column_id;
 }
 
 void	render_walls(t_data *data)
@@ -652,9 +666,9 @@ void	render_walls(t_data *data)
 
 	column_id = 0;
 	distance_from_player_to_projection = data->conf.win_w / 2 * tanl(FOV_ANGLE / 2);
-	while(column_id < data->conf.num_rays)
+	while(column_id < data->conf.horz_num_rays + data->conf.vert_num_rays)
 	{
-		distance_from_player_to_wall = (data->rays[column_id]->distance);// * cos(data->rays[column_id]->angel - data->player.rotation_angel);
+		distance_from_player_to_wall = (data->rays_vert[column_id]->distance);
 		projected_wall_heigth = (TILE_SIZE * distance_from_player_to_projection) / distance_from_player_to_wall;
 		rect(data, column_id * STRIP_WIDTH, data->conf.win_h / 2 - projected_wall_heigth / 2, STRIP_WIDTH, projected_wall_heigth, 0xFFFFFF);
 		column_id++;
@@ -702,7 +716,8 @@ void	update(int keycode, t_data *data)
 	mlx_clear_window(data->mlx, data->mlx_win);
 	move(keycode, data);
 	render_map(data);
-	render_rays(data);
+	render_rays_horz(data);
+	render_rays_vert(data);
 	render_player(data);
 //	render_walls(data);
 }
