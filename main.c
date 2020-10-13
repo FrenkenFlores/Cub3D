@@ -260,7 +260,7 @@ void	start(t_data *data)
 	data->player.turn_direction = 0;   // +1 : right, -1 : left
 	data->player.walk_directoin = 0;  // +1 : forward, -1 : backward
 	data->player.radius = 16;
-	data->player.rotation_angel = PI / 2;
+	data->player.rotation_angel = 0;
 	data->player.move_speed = 8.0;
 	data->player.rotation_speed = 15 * (PI / 180);
 /*	data->ray.angel = 0; //data->player.rotation_angel - (FOV_ANGLE / 2)
@@ -484,14 +484,12 @@ void	ray_pointer(t_ray *ray)
 	ray->point_right = !ray->point_left;
 }
 
-long double	safe_tan(long double angle)
+double calculate_distance(double x1, double y1, double x2, double y2)
 {
-
-	return(tanl(angle + 0.1));
+	return (sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)));
 }
 
-
-int	ray_vert_hit(t_ray *ray, t_data *data)
+void	ray_vert_hit(t_ray *ray, t_data *data)
 {
 	ray->found_vert_wall_hit = 0;
 	ray->x_intercept = (int)(data->player.x / TILE_SIZE) * TILE_SIZE;
@@ -508,7 +506,7 @@ int	ray_vert_hit(t_ray *ray, t_data *data)
 	ray->vert_wall_hit_y = 0;
 	while (ray->found_vert_wall_hit == 0)
 	{
-		if (is_wall(data, ray->next_vert_x - (ray->point_left ? 1 : 0), ray->next_vert_y) == 1)
+		if (ray->next_vert_y > 0 && is_wall(data, ray->next_vert_x - (ray->point_left ? 1 : 0), ray->next_vert_y) == 1)
 		{
 			ray->vert_wall_hit_x = ray->next_vert_x;
 			ray->vert_wall_hit_y = ray->next_vert_y;
@@ -516,18 +514,16 @@ int	ray_vert_hit(t_ray *ray, t_data *data)
 			break;
 		}
 		else if (is_wall(data, ray->next_vert_x - (ray->point_left ? 1 : 0), ray->next_vert_y) == -1)
-			return (-1);
+			break;
 		else
 		{
 			ray->next_vert_x += ray->x_step;
 			ray->next_vert_y += ray->y_step;
 		}
 	}
-//	line(data, data->player.x, data->player.y, ray->vert_wall_hit_x, ray->vert_wall_hit_y, 0xFF0000);
-	return(1);
 }
 
-int	ray_horz_hit(t_ray *ray, t_data *data)
+void	ray_horz_hit(t_ray *ray, t_data *data)
 {
 	ray->found_horz_wall_hit = 0;
 	ray->y_intercept = (int)(data->player.y / TILE_SIZE) * TILE_SIZE;
@@ -552,18 +548,13 @@ int	ray_horz_hit(t_ray *ray, t_data *data)
 			break;
 		}
 		else if (is_wall(data, ray->next_horz_x, ray->next_horz_y - (ray->point_up ? 1 : 0)) == -1)
-			return (-1);
+			break;
 		else
 		{
 			ray->next_horz_x += ray->x_step;
 			ray->next_horz_y += ray->y_step;
 		}	
 	}
-
-//	printf("%f, %f\n", ray->horz_wall_hit_x, ray->horz_wall_hit_y);
-//	line(data, data->player.x, data->player.y, ray->horz_wall_hit_x, ray->horz_wall_hit_y, 0x00FF00);
-//	mlx_pixel_put(data->mlx, data->mlx_win, ray->horz_wall_hit_x, ray->horz_wall_hit_y, 0xFF0000);
-	return (1);
 }
 
 void	render_rays(t_data *data)
@@ -573,10 +564,11 @@ void	render_rays(t_data *data)
 	int column_id;
 	int num_rays;
 	float angel;
+	double horz_distance;
+	double vert_distance;
 
 	column_id = 0;
 	angel = data->player.rotation_angel - (FOV_ANGLE / 2);
-//	printf("%f|%f\n", normalize_angle(angel), tanl(normalize_angle(angel)));
 	num_rays = data->conf.win_w / STRIP_WIDTH;
 	if (data->rays)
 		free_rays_array(data);
@@ -589,22 +581,16 @@ void	render_rays(t_data *data)
 			exit(EXIT_FAILURE);
 		ray->angel = normalize_angle(angel);
 		ray_pointer(ray);
-		if (ray_horz_hit(ray, data) == -1 && ray_vert_hit(ray, data) == -1)
-		{
-			num_rays--;
-			free (ray);
-			continue;
-		}
-//		if (ray_vert_hit(ray, data) == -1)
-//		{
-//			num_rays--;
-//			free (ray);
-//			continue;
-//		}
-		ray->wall_hit_x = (ray->vert_wall_hit_x < ray->horz_wall_hit_x) ? ray->horz_wall_hit_x : ray->vert_wall_hit_x;
-		ray->wall_hit_y = (ray->vert_wall_hit_y < ray->horz_wall_hit_y) ? ray->horz_wall_hit_y : ray->vert_wall_hit_y;
-		printf("%f|%f\n", ray->wall_hit_x, ray->wall_hit_y);
-		line(data, data->player.x, data->player.y, ray->wall_hit_x, ray->wall_hit_y, 0xFFFF00);
+		if (ray->angel != 0 || ray->angel != M_PI)
+			ray_horz_hit(ray, data);
+		if (ray->angel != (M_PI / 2) || ray->angel != (3 * M_PI / 2))
+			ray_vert_hit(ray, data);
+		horz_distance = (ray->found_horz_wall_hit) ? calculate_distance(data->player.x, data->player.y, ray->horz_wall_hit_x, ray->horz_wall_hit_y) : INFINITY;
+		vert_distance = (ray->found_vert_wall_hit) ? calculate_distance(data->player.x, data->player.y, ray->vert_wall_hit_x, ray->vert_wall_hit_y) : INFINITY;
+		ray->wall_hit_x = (horz_distance < vert_distance) ? ray->horz_wall_hit_x : ray->vert_wall_hit_x;
+		ray->wall_hit_y = (horz_distance < vert_distance) ? ray->horz_wall_hit_y : ray->vert_wall_hit_y;
+		ray->distance = (horz_distance < vert_distance) ? horz_distance : vert_distance;
+		line(data,data->player.x, data->player.y, ray->wall_hit_x, ray->wall_hit_y, 0xFFFF00);
 		data->rays[column_id] = ray;
 		angel += FOV_ANGLE / num_rays;
 		column_id++;
