@@ -3,7 +3,7 @@
 # define PI 3.14159265359
 # define TILE_SIZE 32
 # define FOV_ANGLE 60 * PI / 180
-# define STRIP_WIDTH 50
+# define STRIP_WIDTH 30
 # define MAP_SIZE 1
 # include <errno.h>
 # include <stdio.h>
@@ -39,8 +39,6 @@ typedef struct s_ray
 	double	vert_wall_hit_x;
 	double	vert_wall_hit_y;
 	double	distance;
-	double	horz_distance;
-	double	vert_distance;
 	int		point_up;
 	int		point_down;
 	int		point_right;
@@ -90,8 +88,7 @@ typedef struct s_conf
 	int		win_w;
 	int		map_w;
 	int		map_h;
-	int		vert_num_rays;
-	int		horz_num_rays;
+	int		num_rays;
 	int		cell_color;
 	int		floor_color;
 	char	*world_map;
@@ -117,8 +114,7 @@ typedef struct s_data
 	int			save;
 	t_conf		conf;
 	t_player	player;
-	t_ray		**rays_vert;
-	t_ray		**rays_horz;
+	t_ray		**rays;
 	t_img		img;
 	t_img		tex[5];
 	t_sprite	*sprite;
