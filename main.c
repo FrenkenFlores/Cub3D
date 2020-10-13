@@ -505,6 +505,12 @@ long double	safe_tan(long double angle)
 }
 
 
+double calculate_distance(double x1, double y1, double x2, double y2)
+{
+	return (sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)));
+}
+
+
 int	ray_vert_hit(t_ray *ray, t_data *data)
 {
 	ray->found_vert_wall_hit = 0;
@@ -522,7 +528,7 @@ int	ray_vert_hit(t_ray *ray, t_data *data)
 	ray->vert_wall_hit_y = 0;
 	while (ray->found_vert_wall_hit == 0)
 	{
-		if (is_wall(data, ray->next_vert_x - (ray->point_left ? 1 : 0), ray->next_vert_y) == 1)
+		if (ray->next_vert_y > 0 && is_wall(data, ray->next_vert_x - (ray->point_left ? 1 : 0), ray->next_vert_y) == 1)
 		{
 			ray->vert_wall_hit_x = ray->next_vert_x;
 			ray->vert_wall_hit_y = ray->next_vert_y;
@@ -609,7 +615,7 @@ void	render_rays_horz(t_data *data)
 			free (ray);
 			continue;
 		}
-		printf("%i H %f, %f\n", column_id, ray->horz_wall_hit_x, ray->horz_wall_hit_y);
+//		printf("%i H %f, %f\n", column_id, ray->horz_wall_hit_x, ray->horz_wall_hit_y);
 		line(data, data->player.x, data->player.y, ray->horz_wall_hit_x, ray->horz_wall_hit_y, 0x0000FF);
 		data->rays_horz[column_id] = ray;
 		angel += FOV_ANGLE / num_rays;
@@ -648,14 +654,37 @@ void	render_rays_vert(t_data *data)
 			free (ray);
 			continue;
 		}
-		printf("%i V %f, %f\n", column_id, ray->vert_wall_hit_x, ray->vert_wall_hit_y);
-		line(data, data->player.x, data->player.y, ray->vert_wall_hit_x, ray->vert_wall_hit_y, 0xFF0000);
+//		printf("%i V %f, %f\n", column_id, ray->vert_wall_hit_x, ray->vert_wall_hit_y);
+//		line(data, data->player.x, data->player.y, ray->vert_wall_hit_x, ray->vert_wall_hit_y, 0xFF0000);
 		data->rays_vert[column_id] = ray;
 		angel += FOV_ANGLE / num_rays;
 		column_id++;
 	}
 	data->conf.vert_num_rays = column_id;
 }
+
+void	render_rays(t_data *data)
+{
+	int i;
+	double wall_hit_x;
+	double wall_hit_y;
+	double horz_hit_distance;
+	double vert_hit_distance;
+
+	i = 0;
+	while (i < data->conf.vert_num_rays && i < data->conf.horz_num_rays)
+	{
+	//	line(data, data->player.x, data->player.y, data->rays_horz[i]->horz_wall_hit_x, data->rays_horz[i]->horz_wall_hit_y, 0xFF0000);
+	//	line(data, data->player.x, data->player.y, data->rays_vert[i]->vert_wall_hit_x, data->rays_vert[i]->vert_wall_hit_y, 0xFF0FF0);
+	//	horz_hit_distance = (data->rays_horz[i]->ray_hit_vertical_wall) ? calculate_distance(data->player.x, data->player.y, data->rays_horz[i]->wall_hit_x, data->rays_horz[i]->wall_hit_y) : INTMAX_MAX;
+	//	wall_hit_x = (data->rays_horz[i]->horz_wall_hit_x < data->rays_vert[i]->vert_wall_hit_x) ? data->rays_horz[i]->horz_wall_hit_x : data->rays_vert[i]->vert_wall_hit_x;
+	//	wall_hit_y = (data->rays_horz[i]->horz_wall_hit_y < data->rays_vert[i]->vert_wall_hit_y) ? data->rays_horz[i]->horz_wall_hit_y : data->rays_vert[i]->vert_wall_hit_y;
+	//	printf("|%f  |  %f|\n", wall_hit_x, wall_hit_y);
+	//	line(data, data->player.x, data->player.y, wall_hit_x, wall_hit_y, 0xFF0000);
+		i++;
+	}
+}
+
 
 void	render_walls(t_data *data)
 {
@@ -717,8 +746,10 @@ void	update(int keycode, t_data *data)
 	move(keycode, data);
 	render_map(data);
 	render_rays_horz(data);
-	render_rays_vert(data);
+//	render_rays_vert(data);
+//	render_rays(data);
 	render_player(data);
+
 //	render_walls(data);
 }
 
