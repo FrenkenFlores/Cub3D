@@ -159,10 +159,8 @@ int		is_wall(t_data *data, double x, double y)
 
 	map_index_x = (int)(x / TILE_SIZE);
 	map_index_y = (int)(y / TILE_SIZE);
-//	printf ("%i, %i\n", map_index_x, map_index_y);
 	if (map_index_x < 0 || map_index_x > data->conf.win_w || map_index_y < 0 || map_index_y > data->conf.win_h || map_index_y >= data->conf.map_h)
 			return (-1);
-//		printf ("%i, %i\n", map_index_x, map_index_y);
 	if (ft_strlen(data->str[map_index_y]) > map_index_x)
 		return (data->str[map_index_y][map_index_x] == '1' ? 1 : 0);
 	return (-1);
@@ -261,7 +259,7 @@ void	start(t_data *data)
 	data->player.radius = 16;
 	data->player.rotation_angel = 0;
 	data->player.move_speed = 8.0;
-	data->player.rotation_speed = 15 * (PI / 180);
+	data->player.rotation_speed = 15 * (M_PI / 180);
 /*	data->ray.angel = 0; //data->player.rotation_angel - (FOV_ANGLE / 2)
 	data->ray.wall_hit_x = 0;
 	data->ray.wall_hit_y = 0;
@@ -589,12 +587,22 @@ void	render_rays(t_data *data)
 		ray->wall_hit_x = (horz_distance < vert_distance) ? ray->horz_wall_hit_x : ray->vert_wall_hit_x;
 		ray->wall_hit_y = (horz_distance < vert_distance) ? ray->horz_wall_hit_y : ray->vert_wall_hit_y;
 		ray->distance = (horz_distance < vert_distance) ? horz_distance : vert_distance;
-		line(data,data->player.x, data->player.y, ray->wall_hit_x, ray->wall_hit_y, 0xFFFF00);
+		ray->ray_hit_vertical_wall = (horz_distance > vert_distance) ? 1 : 0;
+		line(data,data->player.x * MAP_SIZE, data->player.y * MAP_SIZE, ray->wall_hit_x * MAP_SIZE, ray->wall_hit_y * MAP_SIZE, 0xFFFF00);
 		data->rays[column_id] = ray;
 		angel += FOV_ANGLE / num_rays;
 		column_id++;
 	}
 	data->conf.num_rays = num_rays;
+}
+
+int		wall_color(t_ray *ray)
+{
+	if (ray->ray_hit_vertical_wall)
+		return (0xFFFFFF);
+	else
+		return (0xCCCCCC);
+	return(0);
 }
 
 void	render_walls(t_data *data)
@@ -610,7 +618,7 @@ void	render_walls(t_data *data)
 	{
 		distance_from_player_to_wall = (data->rays[column_id]->distance);// * cos(data->rays[column_id]->angel - data->player.rotation_angel);
 		projected_wall_heigth = (TILE_SIZE * distance_from_player_to_projection) / distance_from_player_to_wall;
-		rect(data, column_id * STRIP_WIDTH, data->conf.win_h / 2 - projected_wall_heigth / 2, STRIP_WIDTH, projected_wall_heigth, 0xFFFFFF);
+		rect(data, column_id * STRIP_WIDTH, data->conf.win_h / 2 - projected_wall_heigth / 2, STRIP_WIDTH, projected_wall_heigth, wall_color(data->rays[column_id]));
 		column_id++;
 	}
 }
@@ -658,7 +666,7 @@ void	update(int keycode, t_data *data)
 	render_map(data);
 	render_rays(data);
 	render_player(data);
-//	render_walls(data);
+	render_walls(data);
 }
 
 int	main(int argc, char **argv)

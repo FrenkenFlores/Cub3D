@@ -3,8 +3,8 @@
 # define PI 3.14159265359
 # define TILE_SIZE 32
 # define FOV_ANGLE 60 * PI / 180
-# define STRIP_WIDTH 30
-# define MAP_SIZE 1
+# define STRIP_WIDTH 10
+# define MAP_SIZE 0.3
 # include <errno.h>
 # include <stdio.h>
 # include <stdlib.h>
@@ -43,7 +43,7 @@ typedef struct s_ray
 	int		point_down;
 	int		point_right;
 	int		point_left;
-	int		ray_hit_vertical_wall;
+	int		ray_hit_vertical_wall;		// to create the shadow effect
 	int		found_horz_wall_hit;
 	int 	found_vert_wall_hit;
 	double	x_step;	// delta x
