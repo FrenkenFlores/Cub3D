@@ -1,8 +1,7 @@
 #ifndef CUB3D_H
 # define CUB3D_H
-# define PI 3.14159265359
 # define TILE_SIZE 32
-# define FOV_ANGLE 60 * PI / 180
+# define FOV_ANGLE 60 * M_PI / 180
 # define STRIP_WIDTH 10
 # define MAP_SIZE 0.3
 # include <errno.h>

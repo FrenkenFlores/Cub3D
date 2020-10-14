@@ -475,9 +475,9 @@ void	free_rays_array(t_data *data)
 
 void	ray_pointer(t_ray *ray)
 {
-	ray->point_down = (ray->angel >= 0 && ray->angel < PI) ? 1 : 0;
+	ray->point_down = (ray->angel >= 0 && ray->angel < M_PI) ? 1 : 0;
 	ray->point_up = !ray->point_down;
-	ray->point_left = (ray->angel >= PI / 2 && ray->angel < 3 * PI / 2) ? 1 : 0;
+	ray->point_left = (ray->angel >= M_PI / 2 && ray->angel < 3 * M_PI / 2) ? 1 : 0;
 	ray->point_right = !ray->point_left;
 }
 
@@ -616,7 +616,7 @@ void	render_walls(t_data *data)
 	distance_from_player_to_projection = data->conf.win_w / 2 * tanl(FOV_ANGLE / 2);
 	while(column_id < data->conf.num_rays)
 	{
-		distance_from_player_to_wall = (data->rays[column_id]->distance);// * cos(data->rays[column_id]->angel - data->player.rotation_angel);
+		distance_from_player_to_wall = (data->rays[column_id]->distance) * cos(data->rays[column_id]->angel - data->player.rotation_angel);
 		projected_wall_heigth = (TILE_SIZE * distance_from_player_to_projection) / distance_from_player_to_wall;
 		rect(data, column_id * STRIP_WIDTH, data->conf.win_h / 2 - projected_wall_heigth / 2, STRIP_WIDTH, projected_wall_heigth, wall_color(data->rays[column_id]));
 		column_id++;
