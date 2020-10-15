@@ -2,7 +2,7 @@
 # define CUB3D_H
 # define TILE_SIZE 32
 # define FOV_ANGLE 60 * M_PI / 180
-# define STRIP_WIDTH 10
+# define STRIP_WIDTH 1
 # define MAP_SIZE 0.3
 # include <errno.h>
 # include <stdio.h>
@@ -72,7 +72,7 @@ typedef struct s_player
 typedef struct s_img
 {
 	void	*img_ptr;
-	int		*img_addr;
+	char	*img_addr;
 	int		bits_per_pixel;
 	int		line_length;
 	int		endian;

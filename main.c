@@ -257,8 +257,8 @@ void	start(t_data *data)
 	data->player.walk_directoin = 0;  // +1 : forward, -1 : backward
 	data->player.radius = 16;
 	data->player.rotation_angel = 0;
-	data->player.move_speed = 8.0;
-	data->player.rotation_speed = 15 * (M_PI / 180);
+	data->player.move_speed = 4.0;
+	data->player.rotation_speed = 3 * (M_PI / 180);
 /*	data->ray.angel = 0; //data->player.rotation_angel - (FOV_ANGLE / 2)
 	data->ray.wall_hit_x = 0;
 	data->ray.wall_hit_y = 0;
@@ -446,7 +446,7 @@ void	render_map(t_data *data)
 			if (data->str[j][i] == '1')
 				rect(data, i * TILE_SIZE * MAP_SIZE, j * TILE_SIZE * MAP_SIZE, TILE_SIZE * MAP_SIZE, TILE_SIZE * MAP_SIZE, 0xFFFFFF);
 			else if (data->str[j][i] == '0')
-				rect(data, i * TILE_SIZE * MAP_SIZE, j * TILE_SIZE * MAP_SIZE, TILE_SIZE * MAP_SIZE, TILE_SIZE * MAP_SIZE, 0x000000);
+				rect(data, i * TILE_SIZE * MAP_SIZE, j * TILE_SIZE * MAP_SIZE, TILE_SIZE * MAP_SIZE, TILE_SIZE * MAP_SIZE, 0xAAAAAA);
 			i++;
 		}
 		j++;
@@ -483,6 +483,30 @@ void	ray_pointer(t_ray *ray)
 double calculate_distance(double x1, double y1, double x2, double y2)
 {
 	return (sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)));
+}
+
+int		safe_distance(t_data *data, double player_x, double player_y)
+{
+	int i;
+	int j;
+	double radius;
+
+	radius = data->player.radius - 10;
+	j = -1 * radius;
+	while(j <= radius)
+	{
+		i = -1 * radius;
+		while(i <= radius)
+		{
+			if (i * i < radius * radius - j * j)
+			{
+				if (is_wall(data, player_x + i, player_y + j))
+					return -1;			}
+			i++;
+		}
+		j++;
+	}
+	return (1);
 }
 
 void	ray_vert_hit(t_ray *ray, t_data *data)
@@ -638,6 +662,15 @@ void	render_walls(t_data *data)
 	}
 }
 
+void	render_ceilling_floor(t_data *data)
+{
+	int ceill_color = 0xB5D8FF;
+	int floor_color = 0x53575C;
+	rect(data, 0, 0, data->conf.win_w, data->conf.win_h, ceill_color);
+	rect(data, 0, data->conf.win_h / 2, data->conf.win_w, data->conf.win_h, floor_color);
+}
+
+
 void	mlx_close(t_data *data)
 {
 	mlx_destroy_window(data->mlx, data->mlx_win);
@@ -646,9 +679,13 @@ void	mlx_close(t_data *data)
 
 void	move(int keycode, t_data *data)
 {
+	int i;
+	int j;
 	double	player_new_x;
 	double	player_new_y;	
 
+	i = 0;
+	j = -1 * data->player.radius;
 	player_new_y = data->player.y;
 	player_new_x = data->player.x;
 	if (keycode == 13)
@@ -667,7 +704,7 @@ void	move(int keycode, t_data *data)
 		data->player.rotation_angel += data->player.rotation_speed;
 	if (keycode == 53)
 		mlx_close(data);
-	if ((is_wall(data, player_new_x, player_new_y)) == 0)
+	if (safe_distance(data, player_new_x, player_new_y) != -1)
 	{
 		data->player.y = player_new_y;
 		data->player.x = player_new_x;
@@ -678,12 +715,12 @@ void	update(int keycode, t_data *data)
 {
 	t_img	put_img;
 
-	mlx_clear_window(data->mlx, data->mlx_win);
 	move(keycode, data);
+	render_ceilling_floor(data);
 	render_map(data);
-//	render_rays(data);
-//	render_player(data);
-//	render_walls(data);
+	render_rays(data);
+	render_player(data);
+	render_walls(data);
 	put_img = data->img;
 	mlx_put_image_to_window(data->mlx, data->mlx_win, put_img.img_ptr, 0, 0);
 }
@@ -713,6 +750,7 @@ int	main(int argc, char **argv)
 	data.mlx_win = mlx_new_window(data.mlx, data.conf.win_w, data.conf.win_h, "Cub3D");
 	data.img.img_ptr = mlx_new_image(data.mlx, data.conf.win_w, data.conf.win_h);
 	data.img.img_addr = mlx_get_data_addr(data.img.img_ptr, &data.img.bits_per_pixel, &data.img.line_length, &data.img.endian);
+	mlx_put_image_to_window(data.mlx, data.mlx_win, data.img.img_ptr, 0, 0);
 	get_textures(&data);
 //	mlx_pixel_put(data.mlx, data.mlx_win, 111, 111, 0xFFFFFFFF);
 //	rect(&data, 2, 2, TILE_SIZE, TILE_SIZE, 0x00FF00);
@@ -738,6 +776,7 @@ int	main(int argc, char **argv)
 
 //	render_map(&data);
 	mlx_hook(data.mlx_win, 2, 1L<<0, update, &data);
+//	mlx_clear_window(data.mlx, data.mlx_win);
 	mlx_loop(data.mlx);
 	return (0);
 }
