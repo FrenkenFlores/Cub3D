@@ -632,15 +632,40 @@ int		wall_color(t_ray *ray)
 void	get_textures(t_data *data)
 {
 	data->tex[0].img_ptr = mlx_xpm_file_to_image(data->mlx, "./textures/brick.xpm", &data->tex[0].width, &data->tex[0].height);
+	data->tex[0].img_addr = mlx_get_data_addr(data->tex[0].img_ptr, &data->tex[0].bits_per_pixel, &data->tex[0].line_length, &data->tex[0].endian);
 	data->tex[1].img_ptr = mlx_xpm_file_to_image(data->mlx, "./textures/grass.xpm", &data->tex[1].width, &data->tex[1].height);
+	data->tex[1].img_addr = mlx_get_data_addr(data->tex[1].img_ptr, &data->tex[1].bits_per_pixel, &data->tex[1].line_length, &data->tex[1].endian);
 	data->tex[2].img_ptr = mlx_xpm_file_to_image(data->mlx, "./textures/metal.xpm", &data->tex[2].width, &data->tex[2].height);
+	data->tex[2].img_addr = mlx_get_data_addr(data->tex[2].img_ptr, &data->tex[2].bits_per_pixel, &data->tex[2].line_length, &data->tex[2].endian);
 	data->tex[3].img_ptr = mlx_xpm_file_to_image(data->mlx, "./textures/stone.xpm", &data->tex[3].width, &data->tex[3].height);
+	data->tex[3].img_addr = mlx_get_data_addr(data->tex[3].img_ptr, &data->tex[3].bits_per_pixel, &data->tex[3].line_length, &data->tex[3].endian);
 	data->tex[4].img_ptr = mlx_xpm_file_to_image(data->mlx, "./textures/wood.xpm", &data->tex[4].width, &data->tex[4].height);
+	data->tex[4].img_addr = mlx_get_data_addr(data->tex[4].img_ptr, &data->tex[4].bits_per_pixel, &data->tex[4].line_length, &data->tex[4].endian);
 }
 
-void	texture_walls(t_data *data)
+void	texture_walls(t_data *data, t_ray *ray, int column_id, int compression_ratio, int projected_wall_heigth)
 {
+	int tex_x;
+	int tex_y;
+	char *c;
+	char *a;
 
+	tex_y = 0;
+	if (ray->ray_hit_vertical_wall == 1)
+		tex_x = (int)(ray->wall_hit_y) % data->tex[0].width;
+//		tex_x = abs(ray->wall_hit_y - (ray->wall_hit_y / TILE_SIZE) * TILE_SIZE);
+	else if (ray->ray_hit_vertical_wall != 1)
+		tex_x = (int)(ray->wall_hit_x) % data->tex[0].width;
+//		tex_x = abs(ray->wall_hit_x - (ray->wall_hit_x / TILE_SIZE) * TILE_SIZE);
+	while (tex_y <= projected_wall_heigth)
+	{
+		c = data->img.img_addr + ((tex_y + (data->conf.win_h / 2 - projected_wall_heigth / 2)) * data->img.line_length + column_id * (data->img.bits_per_pixel / 8));
+		a = data->tex[0].img_addr + compression_ratio * tex_y * data->tex[0].line_length + tex_x * (data->tex[0].bits_per_pixel / 8);
+		*(unsigned int*)c = *(unsigned int*)a;
+	//	*(unsigned int*)c = data->tex[0].img_addr + compression_ratio * tex_y * data->tex[0].line_length + tex_x * (data->tex[0].bits_per_pixel / 8); //strange effect ;D
+		tex_y++;
+	}
+	printf("%i\n", tex_x);
 }
 
 
@@ -650,6 +675,7 @@ void	render_walls(t_data *data)
 	double distance_from_player_to_projection;
 	double distance_from_player_to_wall;
 	int column_id;
+	double compression_ratio;
 
 	column_id = 0;
 	distance_from_player_to_projection = data->conf.win_w / 2 * tanl(FOV_ANGLE / 2);
@@ -657,7 +683,9 @@ void	render_walls(t_data *data)
 	{
 		distance_from_player_to_wall = (data->rays[column_id]->distance) * cos(data->rays[column_id]->angel - data->player.rotation_angel);
 		projected_wall_heigth = (TILE_SIZE * distance_from_player_to_projection) / distance_from_player_to_wall;
-		rect(data, column_id * STRIP_WIDTH, data->conf.win_h / 2 - projected_wall_heigth / 2, STRIP_WIDTH, projected_wall_heigth, wall_color(data->rays[column_id]));
+		compression_ratio = TILE_SIZE / projected_wall_heigth;
+//		rect(data, column_id * STRIP_WIDTH, data->conf.win_h / 2 - projected_wall_heigth / 2, STRIP_WIDTH, projected_wall_heigth, wall_color(data->rays[column_id]));
+		texture_walls(data, data->rays[column_id], column_id, compression_ratio, projected_wall_heigth);
 		column_id++;
 	}
 }
@@ -710,6 +738,9 @@ void	move(int keycode, t_data *data)
 		data->player.x = player_new_x;
 	}
 }
+
+
+
 
 void	update(int keycode, t_data *data)
 {
