@@ -50,6 +50,16 @@ int		ft_strncmp(const char *s1, const char *s2, size_t n)
 	return (*(unsigned char*)s1 - *(unsigned char*)s2);
 }
 
+void	mlx_pix_put(t_data *data, int x, int y, int color)
+{
+	char	*pos;
+	int		offset;
+
+	offset = y * data->img.line_length + x * (data->img.bits_per_pixel / 8);
+	pos = data->img.img_addr + offset;
+	*(unsigned int*)pos = color;
+}
+
 void	rect(t_data *data, double x, double y, int rect_width, int rect_height, int color)
 {
 	int i;
@@ -61,7 +71,8 @@ void	rect(t_data *data, double x, double y, int rect_width, int rect_height, int
 		i = 0;
 		while (i <= rect_width)
 		{
-			mlx_pixel_put(data->mlx, data->mlx_win, x + i, y + j, color);
+//			mlx_pixel_put(data->mlx, data->mlx_win, x + i, y + j, color);
+			mlx_pix_put(data, x + i, y + j, color);
 			i++;
 		}
 		j++;
@@ -80,33 +91,17 @@ void	circle(t_data *data, double x, double y, double radius, int color)
 		while (i <= radius)
 		{
 			if (i * i <= radius * radius - j * j)
-				mlx_pixel_put(data->mlx, data->mlx_win, x + i, y + j, color);
+//				mlx_pixel_put(data->mlx, data->mlx_win, x + i, y + j, color);
+				mlx_pix_put(data, x + i, y + j, color);
 			i++;
 		}
 		j++;
 	}
 }
-/*
-void	line(t_data *data, double x1, double y1, double x2, double y2, int color)
-{
-	double i;
-	double j;
-	j = y1;
-	while (j <= abs(y2 - y1) * TILE_SIZE)
-	{
-		i = x1;
-		while (i <= abs(x2 - x1) * TILE_SIZE)
-		{
-			if (abs(y2 - y1) != 0 && i == ((j - y1) * (x2 - x1) / (y2 - y1)) + x1)
-				mlx_pixel_put(data->mlx, data->mlx_win, TILE_SIZE * x1 + i, TILE_SIZE * y1 + j, color);
-			if (abs(x2 - x1) != 0 && j == ((i - x1) * (y2 - y1) / (x2 - x1)) + y1)
-				mlx_pixel_put(data->mlx, data->mlx_win, TILE_SIZE * x1 + i, TILE_SIZE * y1 + j, color);
-			i++;
-		}
-		j++;
-	}
-}
-*/
+
+
+
+
 void	line(t_data *data, double x1, double y1, double x2, double y2, int color)
 {
 	double i;
@@ -121,14 +116,16 @@ void	line(t_data *data, double x1, double y1, double x2, double y2, int color)
 		while ((i <= x2 - x1) && x2 >= x1)
 		{
 			if (j >= alpha * i - 1 && j <= alpha * i + 1)
-				mlx_pixel_put(data->mlx, data->mlx_win, x1 + i, y1 + j, color);
+				mlx_pix_put(data, x1 + i, y1 + j, color);
+//				mlx_pixel_put(data->mlx, data->mlx_win, x1 + i, y1 + j, color);
 			i++;
 
 		}
 		while ((i <= x1 - x2) && x2 < x1)
 		{
 			if (j >= alpha * -1 * i - 1 && j <= alpha * -1 *i + 1)
-				mlx_pixel_put(data->mlx, data->mlx_win, x1 - i, y1 + j, color);
+				mlx_pix_put(data, x1 - i, y1 + j, color);
+//				mlx_pixel_put(data->mlx, data->mlx_win, x1 - i, y1 + j, color);
 			i++;
 		}
 		j++;
@@ -139,13 +136,15 @@ void	line(t_data *data, double x1, double y1, double x2, double y2, int color)
 		while ((i <= x2 - x1) && x2 >= x1)
 		{
 			if (j >= alpha * - 1 * i - 1 && j <= alpha * -1 * i + 1)
-				mlx_pixel_put(data->mlx, data->mlx_win, x1 + i, y1 - j, color);
+				mlx_pix_put(data, x1 + i, y1 - j, color);
+//				mlx_pixel_put(data->mlx, data->mlx_win, x1 + i, y1 - j, color);
 			i++;
 		}
 		while ((i <= x1 - x2) && x2 < x1)
 		{
 			if (j >= alpha * i - 1 && j <= alpha * i + 1)
-				mlx_pixel_put(data->mlx, data->mlx_win, x1 - i, y1 - j, color);
+				mlx_pix_put(data, x1 - i, y1 - j, color);
+//				mlx_pixel_put(data->mlx, data->mlx_win, x1 - i, y1 - j, color);
 			i++;
 		}
 		j++;
@@ -605,6 +604,22 @@ int		wall_color(t_ray *ray)
 	return(0);
 }
 
+
+void	get_textures(t_data *data)
+{
+	data->tex[0].img_ptr = mlx_xpm_file_to_image(data->mlx, "./textures/brick.xpm", &data->tex[0].width, &data->tex[0].height);
+	data->tex[1].img_ptr = mlx_xpm_file_to_image(data->mlx, "./textures/grass.xpm", &data->tex[1].width, &data->tex[1].height);
+	data->tex[2].img_ptr = mlx_xpm_file_to_image(data->mlx, "./textures/metal.xpm", &data->tex[2].width, &data->tex[2].height);
+	data->tex[3].img_ptr = mlx_xpm_file_to_image(data->mlx, "./textures/stone.xpm", &data->tex[3].width, &data->tex[3].height);
+	data->tex[4].img_ptr = mlx_xpm_file_to_image(data->mlx, "./textures/wood.xpm", &data->tex[4].width, &data->tex[4].height);
+}
+
+void	texture_walls(t_data *data)
+{
+
+}
+
+
 void	render_walls(t_data *data)
 {
 	double projected_wall_heigth;
@@ -661,12 +676,16 @@ void	move(int keycode, t_data *data)
 
 void	update(int keycode, t_data *data)
 {
+	t_img	put_img;
+
 	mlx_clear_window(data->mlx, data->mlx_win);
 	move(keycode, data);
 	render_map(data);
-	render_rays(data);
-	render_player(data);
-	render_walls(data);
+//	render_rays(data);
+//	render_player(data);
+//	render_walls(data);
+	put_img = data->img;
+	mlx_put_image_to_window(data->mlx, data->mlx_win, put_img.img_ptr, 0, 0);
 }
 
 int	main(int argc, char **argv)
@@ -692,6 +711,9 @@ int	main(int argc, char **argv)
 //Working with the graphics
 	data.mlx = mlx_init();
 	data.mlx_win = mlx_new_window(data.mlx, data.conf.win_w, data.conf.win_h, "Cub3D");
+	data.img.img_ptr = mlx_new_image(data.mlx, data.conf.win_w, data.conf.win_h);
+	data.img.img_addr = mlx_get_data_addr(data.img.img_ptr, &data.img.bits_per_pixel, &data.img.line_length, &data.img.endian);
+	get_textures(&data);
 //	mlx_pixel_put(data.mlx, data.mlx_win, 111, 111, 0xFFFFFFFF);
 //	rect(&data, 2, 2, TILE_SIZE, TILE_SIZE, 0x00FF00);
 //	line(&data, 1, 1, 8, 8, 0x00FFA0);
