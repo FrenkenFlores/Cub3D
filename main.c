@@ -643,32 +643,23 @@ void	get_textures(t_data *data)
 	data->tex[4].img_addr = mlx_get_data_addr(data->tex[4].img_ptr, &data->tex[4].bits_per_pixel, &data->tex[4].line_length, &data->tex[4].endian);
 }
 
-t_img	scale_textures(t_data *data, t_img tex, double scale)
+t_img	scale_textures(t_data *data, t_img tex, double scale, int tex_x)
 {
 	t_img sc_tex;
-	int x1;
 	int y1;
-	double x2;
 	double y2;
 
-	x1 = 0;
-	x2 = 0;
 	sc_tex.height = tex.height * scale;
-	sc_tex.width = tex.width * scale;
+	sc_tex.width = STRIP_WIDTH;//tex.width * scale;
 	sc_tex.img_ptr = mlx_new_image(data->mlx, sc_tex.width, sc_tex.height);
 	sc_tex.img_addr = mlx_get_data_addr(sc_tex.img_ptr, &sc_tex.bits_per_pixel, &sc_tex.line_length, &sc_tex.endian);
-	while (x1 < sc_tex.width)
+	y1 = 0;
+	y2 = 0;
+	while (y1 < sc_tex.height)
 	{
-		y1 = 0;
-		y2 = 0;
-		while (y1 < sc_tex.height)
-		{
-			*(unsigned int*)(sc_tex.img_addr + y1 * sc_tex.line_length + x1 * (sc_tex.bits_per_pixel / 8)) = *(unsigned int*)(tex.img_addr + (int)y2 * tex.line_length + (int)x2 * (tex.bits_per_pixel / 8));
-			y1 += 1;
-			y2 += 1. / scale;
-		}
-		x1 += 1;
-		x2 += 1;
+		*(unsigned int*)(sc_tex.img_addr + y1 * sc_tex.line_length + 0 * (sc_tex.bits_per_pixel / 8)) = *(unsigned int*)(tex.img_addr + (int)y2 * tex.line_length + tex_x * (tex.bits_per_pixel / 8));
+		y1 += 1;
+		y2 += 1 / scale;
 	}
 	return (sc_tex);
 }
@@ -686,15 +677,13 @@ void	texture_walls(t_data *data, t_ray *ray, int column_id, double scale, int pr
 	scale += (scale <= 0) ? 1 : 0;
 	if (ray->ray_hit_vertical_wall == 1)
 		tex_x = (int)(ray->wall_hit_y) % data->tex[0].width;
-//		tex_x = abs(ray->wall_hit_y - (ray->wall_hit_y / TILE_SIZE) * TILE_SIZE);
 	else if (ray->ray_hit_vertical_wall != 1)
 		tex_x = (int)(ray->wall_hit_x) % data->tex[0].width;
-//		tex_x = abs(ray->wall_hit_x - (ray->wall_hit_x / TILE_SIZE) * TILE_SIZE);
-	tex = scale_textures(data, data->tex[0], scale);
+	tex = scale_textures(data, data->tex[0], scale, tex_x);
 	while (tex_y < tex.height)
 	{
 		c = data->img.img_addr + ((tex_y + (data->conf.win_h / 2 - projected_wall_heigth / 2)) * data->img.line_length + column_id * (data->img.bits_per_pixel / 8));
-		a = tex.img_addr + tex_y * tex.line_length + tex_x * (tex.bits_per_pixel / 8);
+		a = tex.img_addr + tex_y * tex.line_length + 0 * (tex.bits_per_pixel / 8);
 		*(unsigned int*)c = *(unsigned int*)a;
 		tex_y++;
 	}
