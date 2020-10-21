@@ -3,7 +3,6 @@
 # define TILE_SIZE 32
 # define FOV_ANGLE 60 * M_PI / 180
 # define STRIP_WIDTH 1
-# define MAP_SIZE 0.3
 # include <errno.h>
 # include <stdio.h>
 # include <stdlib.h>
@@ -82,11 +81,13 @@ typedef struct s_img
 
 typedef struct s_conf
 {
+	int		str_num;
 	int		column;
 	int		win_h;
 	int		win_w;
 	int		map_w;
 	int		map_h;
+	double	map_size;
 	int		num_rays;
 	int		cell_color;
 	int		floor_color;

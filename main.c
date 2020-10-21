@@ -287,6 +287,32 @@ void	get_player_location(t_data *data)
 	}
 }
 
+void	get_resolution(char **str, t_data *data, size_t elm_count)
+{
+	size_t	j;
+	size_t i;
+	
+	i = 0;
+	while (j < elm_count)
+	{
+		while (i < ft_strlen(str[j]))
+		{
+			if (str[j][i] == 'R')
+			{
+				i++;
+				while (str[j][i] == ' ')
+					i++;
+				data->conf.win_w = ft_atoi(str[j] + i);
+				i += ft_numsize(data->conf.win_w);
+				while (str[j][i] == ' ')
+					i++;
+				data->conf.win_h = ft_atoi(str[j] + i);
+			}
+			i++;
+		}
+		j++;
+	}
+}
 
 void	start(t_data *data)
 {
@@ -309,8 +335,7 @@ void	start(t_data *data)
 	data->ray.ray_hit_vertical_wall = 0;
 */	data->conf.map_h = -1;
 	data->conf.map_w = -1;
-	data->conf.win_h = 960;
-	data->conf.win_w = 1200;
+	data->conf.map_size = 0.3;
 	data->conf.world_map = NULL;
 	data->conf.floor_color = -1;
 	data->conf.cell_color = -1;
@@ -430,27 +455,7 @@ void	check_map_error(char **ptr, size_t map_loc, size_t elm_count)
 		printf("%s\n", *map++);
 }
 
-void	getR(char **str, t_data *data, size_t elm_count)
-{
-	size_t	j;
-	size_t i;
-	
-	i = 0;
-	while (j < elm_count)
-	{
-		i = 0;
-		if (str[j][i] == 'R')
-		{
-			i++;
-			while(str[j][i] == ' ')
-				i++;
-			data->img.width = ft_atoi(str[j] + i);
-			i += ft_numsize(data->img.width);
-			data->img.height = ft_atoi(str[j] + i);
-		}
-		j++;
-	}
-}
+
 
 
 char	**getinfo(t_list **list, size_t elm_count)
@@ -483,9 +488,9 @@ void	render_map(t_data *data)
 		while (data->str[j][i])
 		{
 			if (data->str[j][i] == '1')
-				rect(data, i * TILE_SIZE * MAP_SIZE, j * TILE_SIZE * MAP_SIZE, TILE_SIZE * MAP_SIZE, TILE_SIZE * MAP_SIZE, 0xFFFFFF);
+				rect(data, i * TILE_SIZE * data->conf.map_size, j * TILE_SIZE * data->conf.map_size, TILE_SIZE * data->conf.map_size, TILE_SIZE * data->conf.map_size, 0xFFFFFF);
 			else if (data->str[j][i] != '1' && data->str[j][i] != ' ')
-				rect(data, i * TILE_SIZE * MAP_SIZE, j * TILE_SIZE * MAP_SIZE, TILE_SIZE * MAP_SIZE, TILE_SIZE * MAP_SIZE, 0xAAAAAA);
+				rect(data, i * TILE_SIZE * data->conf.map_size, j * TILE_SIZE * data->conf.map_size, TILE_SIZE * data->conf.map_size, TILE_SIZE * data->conf.map_size, 0xAAAAAA);
 			i++;
 		}
 		j++;
@@ -494,7 +499,7 @@ void	render_map(t_data *data)
 
 void	render_player(t_data *data)
 {	
-	circle(data, data->player.x * MAP_SIZE, data->player.y * MAP_SIZE, data->player.radius * MAP_SIZE, 0x212121);
+	circle(data, data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, data->player.radius * data->conf.map_size, 0x212121);
 }
 
 void	free_rays_array(t_data *data)
@@ -650,7 +655,7 @@ void	render_rays(t_data *data)
 		ray->wall_hit_y = (horz_distance < vert_distance) ? ray->horz_wall_hit_y : ray->vert_wall_hit_y;
 		ray->distance = (horz_distance < vert_distance) ? horz_distance : vert_distance;
 		ray->ray_hit_vertical_wall = (horz_distance > vert_distance) ? 1 : 0;
-		line(data,data->player.x * MAP_SIZE, data->player.y * MAP_SIZE, ray->wall_hit_x * MAP_SIZE, ray->wall_hit_y * MAP_SIZE, 0xFFFF00);
+		line(data,data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, ray->wall_hit_x * data->conf.map_size, ray->wall_hit_y * data->conf.map_size, 0xFFFF00);
 		data->rays[column_id] = ray;
 		angel += FOV_ANGLE / num_rays;
 		column_id++;
@@ -827,11 +832,14 @@ int	main(int argc, char **argv)
 	fd = open(argv[1], O_RDONLY);
 	check_error_save(&data, argc, argv, fd);
 	elm_count = make_list(fd, &list);
+	data.conf.str_num = elm_count;
 	data.conf.map_h = elm_count;
 	data.str = getinfo(&list, elm_count);
 	get_player_location(&data);
 //	printf("%f|%f", data.player.x, data.player.y);
-//	getR(data.str, &data, elm_count);
+//	printf("|%s|\n", data.str[0]);
+	get_resolution(data.str, &data, elm_count);
+//	printf("<%d><%d>", data.conf.win_w, data.conf.win_h);
 //	get_map(data.str, &data, elm_count);
 //	printf("%i, %i\n", data.img.width, data.img.height);
 //	printf("%s", data.conf.world_map);
