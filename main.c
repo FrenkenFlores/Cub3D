@@ -1,6 +1,7 @@
 #include "cub3d.h"
 
 
+
 int		ft_numsize(int num)
 {
 	int size;
@@ -35,6 +36,13 @@ size_t	ft_strlen(const char *str)
 	while (str[i] != '\0')
 		i++;
 	return (i);
+}
+
+void		ft_putstr_error(char *s)
+{
+	if (!s)
+		return ;
+	write(2, s, ft_strlen(s));
 }
 
 int		ft_strncmp(const char *s1, const char *s2, size_t n)
@@ -230,18 +238,49 @@ void	get_player_location(t_data *data)
 {
 	int i;
 	int j;
+	int detcted;
+
 	j = 0;
+	detcted = 0;
 	while (data->str[j])
 	{
 		i = 0;
 		while (data->str[j][i])
 		{
-			if (data->str[j][i] == 'P')			
-				{
-					data->player.x = (i + 1) * TILE_SIZE;
-					data->player.y = (j + 1) * TILE_SIZE;
-					break;
-				}
+			if (data->str[j][i] == 'N')			
+			{
+				data->player.rotation_angel -= M_PI / 2;
+				data->player.x = (i + 1) * TILE_SIZE;
+				data->player.y = (j + 1) * TILE_SIZE;
+				detcted++;
+			}
+			if (data->str[j][i] == 'E')			
+			{
+				data->player.x = (i + 1) * TILE_SIZE;
+				data->player.y = (j + 1) * TILE_SIZE;
+				detcted++;
+			}
+			if (data->str[j][i] == 'S')			
+			{
+				data->player.rotation_angel += M_PI / 2;
+				data->player.x = (i + 1) * TILE_SIZE;
+				data->player.y = (j + 1) * TILE_SIZE;
+				detcted++;
+			}
+			if (data->str[j][i] == 'W')			
+			{
+				data->player.rotation_angel += M_PI;
+				data->player.x = (i + 1) * TILE_SIZE;
+				data->player.y = (j + 1) * TILE_SIZE;
+				detcted++;
+			}
+			if (detcted > 1)
+			{
+				errno = EINVAL;
+				perror("Error ");
+				ft_putstr_error("\nRestricted to have more then one orientation on the map\n");
+				exit(-1);
+			}		
 			i++;
 		}
 		j++;
@@ -251,8 +290,8 @@ void	get_player_location(t_data *data)
 
 void	start(t_data *data)
 {
-	data->player.x = -1; //change later
-	data->player.y = -1;
+	data->player.x = 0;
+	data->player.y = 0;
 	data->player.turn_direction = 0;   // +1 : right, -1 : left
 	data->player.walk_directoin = 0;  // +1 : forward, -1 : backward
 	data->player.radius = 16;
@@ -445,7 +484,7 @@ void	render_map(t_data *data)
 		{
 			if (data->str[j][i] == '1')
 				rect(data, i * TILE_SIZE * MAP_SIZE, j * TILE_SIZE * MAP_SIZE, TILE_SIZE * MAP_SIZE, TILE_SIZE * MAP_SIZE, 0xFFFFFF);
-			else if (data->str[j][i] == '0')
+			else if (data->str[j][i] != '1' && data->str[j][i] != ' ')
 				rect(data, i * TILE_SIZE * MAP_SIZE, j * TILE_SIZE * MAP_SIZE, TILE_SIZE * MAP_SIZE, TILE_SIZE * MAP_SIZE, 0xAAAAAA);
 			i++;
 		}
@@ -650,7 +689,7 @@ t_img	scale_textures(t_data *data, t_img tex, double scale, int tex_x)
 	double y2;
 
 	sc_tex.height = tex.height * scale;
-	sc_tex.width = STRIP_WIDTH;//tex.width * scale;
+	sc_tex.width = STRIP_WIDTH;
 	sc_tex.img_ptr = mlx_new_image(data->mlx, sc_tex.width, sc_tex.height);
 	sc_tex.img_addr = mlx_get_data_addr(sc_tex.img_ptr, &sc_tex.bits_per_pixel, &sc_tex.line_length, &sc_tex.endian);
 	y1 = 0;
