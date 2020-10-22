@@ -38,11 +38,14 @@ size_t	ft_strlen(const char *str)
 	return (i);
 }
 
-void		ft_putstr_error(char *s)
+void		ft_put_error(char *s, int id)
 {
 	if (!s)
 		return ;
+	errno = id;
+	perror("Error ");
 	write(2, s, ft_strlen(s));
+	exit(EXIT_FAILURE);
 }
 
 int		ft_strncmp(const char *s1, const char *s2, size_t n)
@@ -168,8 +171,8 @@ int		is_wall(t_data *data, double x, double y)
 	map_index_y = (int)(y / TILE_SIZE);
 	if (map_index_x < 0 || map_index_x > data->conf.win_w || map_index_y < 0 || map_index_y > data->conf.win_h || map_index_y >= data->conf.map_h)
 			return (-1);
-	if (ft_strlen(data->str[map_index_y]) > map_index_x)
-		return (data->str[map_index_y][map_index_x] == '1' ? 1 : 0);
+	if (ft_strlen(data->conf.world_map[map_index_y]) > map_index_x)
+		return (data->conf.world_map[map_index_y][map_index_x] == '1' ? 1 : 0);
 	return (-1);
 }
 
@@ -177,33 +180,15 @@ int		is_wall(t_data *data, double x, double y)
 void	check_error_save(t_data *data, int argc, char **argv, int fd)
 {
 	if (argc < 2)
-	{
-		errno = EINVAL;
-		perror("Error\n");
-		write(2,"\nToo few arguments\n", 19);
-		exit(-1);
-	}
+		ft_put_error("\nToo few arguments\n", EINVAL);
 	if (argc > 2 && ((ft_strncmp(argv[2],"--save", ft_strlen("--save")) != 0) || (ft_strlen(argv[2]) != ft_strlen("--save"))))
-	{
-		errno = EINVAL;
-		perror("Error\n");
-		write(2, "\nOnly --save flag is allowed\n", 29);
-		exit(-1);
-	}
+		ft_put_error("\nOnly --save flag is allowed\n", EINVAL);
 	else 
 		data->save = 1;
 	if (argc >= 2 && (ft_strncmp(argv[1] + ft_strlen(argv[1]) - 4, ".cub", 2)) != 0)
-	{
-		errno = EINVAL;
-		perror("Error\n");
-		write(2, "\nInvalid file\n", 14);
-		exit(-1);
-	}
+		ft_put_error("\nInvalid file\n", EINVAL);
 	if (fd < 0)
-	{
-		perror("Error\n");
-		exit(-1);
-	}
+		ft_put_error("\nCan not open file\n", EINVAL);
 }
 
 t_list	*push_back(char *str, t_list *old_list)
@@ -242,32 +227,32 @@ void	get_player_location(t_data *data)
 
 	j = 0;
 	detcted = 0;
-	while (data->str[j])
+	while (j < data->conf.map_h)
 	{
 		i = 0;
-		while (data->str[j][i])
+		while (data->conf.world_map[j][i])
 		{
-			if (data->str[j][i] == 'N')			
+			if (data->conf.world_map[j][i] == 'N')			
 			{
 				data->player.rotation_angel -= M_PI / 2;
 				data->player.x = (i + 1) * TILE_SIZE;
 				data->player.y = (j + 1) * TILE_SIZE;
 				detcted++;
 			}
-			if (data->str[j][i] == 'E')			
+			if (data->conf.world_map[j][i] == 'E')			
 			{
 				data->player.x = (i + 1) * TILE_SIZE;
 				data->player.y = (j + 1) * TILE_SIZE;
 				detcted++;
 			}
-			if (data->str[j][i] == 'S')			
+			if (data->conf.world_map[j][i] == 'S')			
 			{
 				data->player.rotation_angel += M_PI / 2;
 				data->player.x = (i + 1) * TILE_SIZE;
 				data->player.y = (j + 1) * TILE_SIZE;
 				detcted++;
 			}
-			if (data->str[j][i] == 'W')			
+			if (data->conf.world_map[j][i] == 'W')			
 			{
 				data->player.rotation_angel += M_PI;
 				data->player.x = (i + 1) * TILE_SIZE;
@@ -275,12 +260,7 @@ void	get_player_location(t_data *data)
 				detcted++;
 			}
 			if (detcted > 1)
-			{
-				errno = EINVAL;
-				perror("Error ");
-				ft_putstr_error("\nRestricted to have more then one orientation on the map\n");
-				exit(-1);
-			}		
+			ft_put_error("\nRestricted to have more then one orientation on the map\n", EINVAL);		
 			i++;
 		}
 		j++;
@@ -312,6 +292,8 @@ void	get_resolution(char **str, t_data *data, size_t elm_count)
 		}
 		j++;
 	}
+	if (!(data->conf.win_h) || !(data->conf.win_w))
+		ft_put_error("\nInvalid resolution parameters\n", EINVAL);
 }
 
 void	start(t_data *data)
@@ -343,58 +325,31 @@ void	start(t_data *data)
 	data->save = 0;
 }
 
-int		get_map(char **ptr, t_data *data, size_t elm_count)
+int		get_map(char **ptr, t_data *data)
 {
-	size_t i;
-	size_t j;
-	size_t z;
-	size_t k;
-	size_t length;
+	int j;
+	int i;
 
-	length = 0;
-	i = elm_count - 1;
-	j = 0;
-	z = 0;
-	k = 0;
-	printf("<<i = %i, %c>>\n",i ,  ptr[i - 1][0]);
-	while (ptr[i] && i > 0)
+	j = data->conf.str_num - 1;
+	while (j > 0)
 	{
-		printf("x1");
-		while (ptr[i][j] != '\0' && (ptr[i][j] == '1' || ptr[i][j] == ' ' || ptr[i][j] == '0' || ptr[i][j] == 'N' || ptr[i][j] == 'S' || ptr[i][j] == 'E' || ptr[i][j] == 'W' || ptr[i][j] == 'P' || ptr[i][j] == '2'))
-			j++;
-		printf("::%i, %i::\n", j, ft_strlen(ptr[i]));
-		if (j == ft_strlen(ptr[i]))
+		i = 0;
+		while (i < ft_strlen(ptr[j]))
 		{
-			length = length + ft_strlen(ptr[i]) + 1; //+1 for '\n'
-			i--;
+			if (ptr[j][i] == ' ' || ptr[j][i] == '0' || ptr[j][i] == '1' || ptr[j][i] == '2'
+			|| ptr[j][i] == 'N' || ptr[j][i] == 'E' || ptr[j][i] == 'S' || ptr[j][i] == 'W')
+				i++;
+			else
+				break;
 		}
-		else
-			break;
+		if (i != ft_strlen(ptr[j]))
+			ft_put_error("\nInvalid map\n", EINVAL);
+		j--;
 	}
-	printf("^^^%s^^^", ptr[i]);
-	printf("::%i::\n", length);
-//	if (!(data->conf.world_map = (char*)malloc(sizeof(char) * length + 1))
-//		exit(EXIT_FAILURE); // for '\0;
-//	printf("::%i::\n", ft_strlen(data->conf.world_map));
-	printf ("8#%i#8\n#", i);
-	while (i < elm_count)
-	{
-		printf ("#%i#%s\n#", i, ptr[i]);
-//			printf("%i\n", ptr[i - 1][0] == '1');
-//		printf ("elmC = %d, i = %d\n", elm_count, i);
-		while (ptr[i][k] != '\0')
-			data->conf.world_map[z++] = ptr[i][k++];
-		data->conf.world_map[z++] = '\n';
-		printf ("%s", ptr[i]);
-		i++;
-		if (i == elm_count - 1)
-			return (1);
-		i++;
-	}
-	errno = EINVAL;   //карта вообще не сущ.
-	perror("Error");
-	write(2,"\nMap dose not exist\n", 20);
-	exit(EXIT_FAILURE);
+	data->conf.world_map = &ptr[++j];
+	if (j == 0)
+		ft_put_error("\nMap dose not exist\n", EINVAL);
+	return (data->conf.str_num - j);
 }
 
 void	check_map_error(char **ptr, size_t map_loc, size_t elm_count)
@@ -482,14 +437,14 @@ void	render_map(t_data *data)
 {
 	int i = 0;
 	int j = 0;
-	while (data->str[j])
+	while (j < data->conf.map_h)
 	{
 		i = 0;
-		while (data->str[j][i])
+		while (data->conf.world_map[j][i])
 		{
-			if (data->str[j][i] == '1')
+			if (data->conf.world_map[j][i] == '1')
 				rect(data, i * TILE_SIZE * data->conf.map_size, j * TILE_SIZE * data->conf.map_size, TILE_SIZE * data->conf.map_size, TILE_SIZE * data->conf.map_size, 0xFFFFFF);
-			else if (data->str[j][i] != '1' && data->str[j][i] != ' ')
+			else if (data->conf.world_map[j][i] != '1' && data->conf.world_map[j][i] != ' ')
 				rect(data, i * TILE_SIZE * data->conf.map_size, j * TILE_SIZE * data->conf.map_size, TILE_SIZE * data->conf.map_size, TILE_SIZE * data->conf.map_size, 0xAAAAAA);
 			i++;
 		}
@@ -708,7 +663,6 @@ t_img	scale_textures(t_data *data, t_img tex, double scale, int tex_x)
 	return (sc_tex);
 }
 
-
 void	texture_walls(t_data *data, t_ray *ray, int column_id, double scale, int projected_wall_heigth)
 {
 	t_img	tex;
@@ -732,7 +686,6 @@ void	texture_walls(t_data *data, t_ray *ray, int column_id, double scale, int pr
 		tex_y++;
 	}
 }
-
 
 void	render_walls(t_data *data)
 {
@@ -761,7 +714,6 @@ void	render_ceilling_floor(t_data *data)
 	rect(data, 0, 0, data->conf.win_w, data->conf.win_h, ceill_color);
 	rect(data, 0, data->conf.win_h / 2, data->conf.win_w, data->conf.win_h, floor_color);
 }
-
 
 void	mlx_close(t_data *data)
 {
@@ -803,9 +755,6 @@ void	move(int keycode, t_data *data)
 	}
 }
 
-
-
-
 void	update(int keycode, t_data *data)
 {
 	t_img	put_img;
@@ -833,14 +782,17 @@ int	main(int argc, char **argv)
 	check_error_save(&data, argc, argv, fd);
 	elm_count = make_list(fd, &list);
 	data.conf.str_num = elm_count;
-	data.conf.map_h = elm_count;
+//	data.conf.map_h = elm_count;
 	data.str = getinfo(&list, elm_count);
-	get_player_location(&data);
 //	printf("%f|%f", data.player.x, data.player.y);
 //	printf("|%s|\n", data.str[0]);
 	get_resolution(data.str, &data, elm_count);
 //	printf("<%d><%d>", data.conf.win_w, data.conf.win_h);
-//	get_map(data.str, &data, elm_count);
+	data.conf.map_h = get_map(data.str, &data);
+	get_player_location(&data);
+//	printf("%d\n", data.conf.map_h);
+//	for(int z = 0; z < data.conf.map_h; z++)
+//		printf("%s\n", data.conf.world_map[z]);
 //	printf("%i, %i\n", data.img.width, data.img.height);
 //	printf("%s", data.conf.world_map);
 //Working with the graphics

@@ -91,7 +91,7 @@ typedef struct s_conf
 	int		num_rays;
 	int		cell_color;
 	int		floor_color;
-	char	*world_map;
+	char	**world_map;
 }	t_conf;
 
 typedef struct s_sprite
@@ -111,6 +111,7 @@ typedef struct s_data
 	void		*mlx;
 	void		*mlx_win;
 	char		**str;
+	char		**map;
 	int			save;
 	t_conf		conf;
 	t_player	player;
