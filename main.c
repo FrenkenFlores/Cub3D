@@ -352,66 +352,59 @@ int		get_map(char **ptr, t_data *data)
 	return (data->conf.str_num - j);
 }
 
-void	check_map_error(char **ptr, size_t map_loc, size_t elm_count)
+
+int		check_position(char **world_map, int j, int i)
 {
-	size_t i;
-	size_t j;
-	int g = 0;
-	char	**map;
+	if (world_map[j][i] != '1' && world_map[j][i] != '2' && world_map[j][i] != '0'
+	&& world_map[j][i] != 'N' && world_map[j][i] != 'E' && world_map[j][i] != 'S'
+	&& world_map[j][i] != 'W')
+		return (-1);
+	return (1);
+}
 
-	i = 0;
-	j = 0;
-//	printf("%d", elm_count);
-	map = (char**)malloc(sizeof(char*) * elm_count + 1);
-	while (i < elm_count)
-	{
-//		printf("x");
-		map[i] = ptr[i];
-//		printf("%s\n", ptr[i]);
-		i++;
-	}
-//	printf("%s", map[5]);
-	map[i] = NULL;
-	while (map[map_loc][j] == ' ')
-		j++;
-	while (g != 60) // дороботать
-	{
-		printf ("  <player:%d,%d>  \n",map_loc, j);
-
-		if (map[map_loc][j + 1] == '1')
-			map[map_loc][j++] = 'X';
-		else if (map[map_loc + 1][j] == '1')
-			map[map_loc++][j] = 'X';
-		else if (map[map_loc][j - 1] == '1')
-			map[map_loc][j--] = 'X';
-		else if (map[map_loc - 1][j] == '1')
-		{
-			map[map_loc--][j] = 'X';
-			if (map[map_loc - 1][j] == 'X')
-				break;
-		}
-		/*
-		if (map[map_loc][j] == '1')
-		{
-			map[map_loc][j] = 'X';
-			if (map[map_loc][j + 1] == '\0')
-			{
-				map[map_loc][j] = 'X';
-				map_loc++;
-				j = -1;
-			}
-		}
-		j++;*/
-		g++;
-	}
-	
-//	printf ("%ld", j);
-	while (*map != NULL)
-		printf("%s\n", *map++);
+int		check_zeros(char **world_map, int j, int i)
+{
+	if (check_position(world_map, j - 1, i - 1) == -1)
+		return (-1);
+	if (check_position(world_map, j - 1, i) == -1)
+		return (-1);
+	if (check_position(world_map, j - 1, i + 1) == -1)
+		return (-1);
+	if (check_position(world_map, j, i - 1) == -1)
+		return (-1);
+	if (check_position(world_map, j, i + 1) == -1)
+		return (-1);
+	if (check_position(world_map, j + 1, i - 1) == -1)
+		return (-1);
+	if (check_position(world_map, j + 1, i) == -1)
+		return (-1);
+	if (check_position(world_map, j + 1, i + 1) == -1)
+		return (-1);
+	return (1);
 }
 
 
+void	check_map(t_data *data)
+{
+	int i;
+	int j;
+	int len;
 
+	i = 0;
+	j = 0;
+	while(j < data->conf.map_h)
+	{
+		i = 0;
+		len = ft_strlen(data->conf.world_map[j]);
+		while(i < len)
+		{
+			if (data->conf.world_map[j][i] == '0' && (check_zeros(data->conf.world_map, j, i) == -1))
+				ft_put_error("\nInvalid map\n", EINVAL);
+			i++;
+		}
+		j++;
+	}
+}
 
 char	**getinfo(t_list **list, size_t elm_count)
 {
@@ -422,13 +415,14 @@ char	**getinfo(t_list **list, size_t elm_count)
 
 	tmp = *list;
 	j = elm_count;
-	ptr = (char**)malloc((sizeof(char*) * j) + 1);
+	ptr = (char**)malloc((sizeof(char*) * j) + 2);
 	while (tmp && j >= 0)
 	{
 		ptr[j - 1] = tmp->content;
 		tmp = tmp->next;
 		j--;
 	}
+	ptr[elm_count++] = '\n';
 	ptr[elm_count] = NULL;
 return (ptr);
 }
@@ -789,6 +783,7 @@ int	main(int argc, char **argv)
 	get_resolution(data.str, &data, elm_count);
 //	printf("<%d><%d>", data.conf.win_w, data.conf.win_h);
 	data.conf.map_h = get_map(data.str, &data);
+	check_map(&data);
 	get_player_location(&data);
 //	printf("%d\n", data.conf.map_h);
 //	for(int z = 0; z < data.conf.map_h; z++)
