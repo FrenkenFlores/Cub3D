@@ -81,6 +81,11 @@ typedef struct s_img
 
 typedef struct s_conf
 {
+	char	*path_north;
+	char	*path_east;
+	char	*path_south;
+	char	*path_west;
+	char	*path_sprite;
 	int		str_num;
 	int		column;
 	int		win_h;
