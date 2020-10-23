@@ -111,7 +111,6 @@ typedef struct s_data
 	void		*mlx;
 	void		*mlx_win;
 	char		**str;
-	char		**map;
 	int			save;
 	t_conf		conf;
 	t_player	player;

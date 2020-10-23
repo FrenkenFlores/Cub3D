@@ -624,15 +624,15 @@ int		wall_color(t_ray *ray)
 
 void	get_textures(t_data *data)
 {
-	data->tex[0].img_ptr = mlx_xpm_file_to_image(data->mlx, "./textures/brick.xpm", &data->tex[0].width, &data->tex[0].height);
+	data->tex[0].img_ptr = mlx_xpm_file_to_image(data->mlx, "./textures/brick.xpm", &data->tex[0].width, &data->tex[0].height);	//N
 	data->tex[0].img_addr = mlx_get_data_addr(data->tex[0].img_ptr, &data->tex[0].bits_per_pixel, &data->tex[0].line_length, &data->tex[0].endian);
-	data->tex[1].img_ptr = mlx_xpm_file_to_image(data->mlx, "./textures/grass.xpm", &data->tex[1].width, &data->tex[1].height);
+	data->tex[1].img_ptr = mlx_xpm_file_to_image(data->mlx, "./textures/wood.xpm", &data->tex[1].width, &data->tex[1].height);	//E
 	data->tex[1].img_addr = mlx_get_data_addr(data->tex[1].img_ptr, &data->tex[1].bits_per_pixel, &data->tex[1].line_length, &data->tex[1].endian);
-	data->tex[2].img_ptr = mlx_xpm_file_to_image(data->mlx, "./textures/metal.xpm", &data->tex[2].width, &data->tex[2].height);
+	data->tex[2].img_ptr = mlx_xpm_file_to_image(data->mlx, "./textures/metal.xpm", &data->tex[2].width, &data->tex[2].height);	//S
 	data->tex[2].img_addr = mlx_get_data_addr(data->tex[2].img_ptr, &data->tex[2].bits_per_pixel, &data->tex[2].line_length, &data->tex[2].endian);
-	data->tex[3].img_ptr = mlx_xpm_file_to_image(data->mlx, "./textures/stone.xpm", &data->tex[3].width, &data->tex[3].height);
+	data->tex[3].img_ptr = mlx_xpm_file_to_image(data->mlx, "./textures/stone.xpm", &data->tex[3].width, &data->tex[3].height);	//W
 	data->tex[3].img_addr = mlx_get_data_addr(data->tex[3].img_ptr, &data->tex[3].bits_per_pixel, &data->tex[3].line_length, &data->tex[3].endian);
-	data->tex[4].img_ptr = mlx_xpm_file_to_image(data->mlx, "./textures/wood.xpm", &data->tex[4].width, &data->tex[4].height);
+	data->tex[4].img_ptr = mlx_xpm_file_to_image(data->mlx, "./textures/grass.xpm", &data->tex[4].width, &data->tex[4].height);	//FLOOR
 	data->tex[4].img_addr = mlx_get_data_addr(data->tex[4].img_ptr, &data->tex[4].bits_per_pixel, &data->tex[4].line_length, &data->tex[4].endian);
 }
 
@@ -657,6 +657,26 @@ t_img	scale_textures(t_data *data, t_img tex, double scale, int tex_x)
 	return (sc_tex);
 }
 
+t_img	choose_textrue(t_data *data, t_ray *ray)
+{
+	if (ray->ray_hit_vertical_wall)
+	{
+		if (ray->angel > M_PI / 2 && ray->angel <= 3 * M_PI / 2)
+			return(data->tex[3]);
+		else
+			return(data->tex[1]);
+	}
+	else
+	{
+		if (ray->angel > 0 && ray->angel <= M_PI)
+			return(data->tex[2]);
+		else
+			return(data->tex[0]);
+	}
+	
+	
+}
+
 void	texture_walls(t_data *data, t_ray *ray, int column_id, double scale, int projected_wall_heigth)
 {
 	t_img	tex;
@@ -671,7 +691,7 @@ void	texture_walls(t_data *data, t_ray *ray, int column_id, double scale, int pr
 		tex_x = (int)(ray->wall_hit_y) % data->tex[0].width;
 	else if (ray->ray_hit_vertical_wall != 1)
 		tex_x = (int)(ray->wall_hit_x) % data->tex[0].width;
-	tex = scale_textures(data, data->tex[0], scale, tex_x);
+	tex = scale_textures(data, choose_textrue(data, ray), scale, tex_x);
 	while (tex_y < tex.height)
 	{
 		c = data->img.img_addr + ((tex_y + (data->conf.win_h / 2 - projected_wall_heigth / 2)) * data->img.line_length + column_id * (data->img.bits_per_pixel / 8));
