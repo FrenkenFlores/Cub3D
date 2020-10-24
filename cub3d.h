@@ -101,9 +101,12 @@ typedef struct s_conf
 
 typedef struct s_sprite
 {
-	t_position	pos;
+	int			x;
+	int			y;
 	double		dir;
-	double		dist;
+	double		distance;
+	double		ray_hit_x;
+	double		ray_hit_y;
 	int			screen_s;
 	int			h_off;
 	int			v_off;

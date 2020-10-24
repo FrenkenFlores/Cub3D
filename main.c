@@ -128,7 +128,6 @@ void	line(t_data *data, double x1, double y1, double x2, double y2, int color)
 		{
 			if (j >= alpha * i - 1 && j <= alpha * i + 1)
 				mlx_pix_put(data, x1 + i, y1 + j, color);
-//				mlx_pixel_put(data->mlx, data->mlx_win, x1 + i, y1 + j, color);
 			i++;
 
 		}
@@ -136,7 +135,6 @@ void	line(t_data *data, double x1, double y1, double x2, double y2, int color)
 		{
 			if (j >= alpha * -1 * i - 1 && j <= alpha * -1 *i + 1)
 				mlx_pix_put(data, x1 - i, y1 + j, color);
-//				mlx_pixel_put(data->mlx, data->mlx_win, x1 - i, y1 + j, color);
 			i++;
 		}
 		j++;
@@ -148,14 +146,12 @@ void	line(t_data *data, double x1, double y1, double x2, double y2, int color)
 		{
 			if (j >= alpha * - 1 * i - 1 && j <= alpha * -1 * i + 1)
 				mlx_pix_put(data, x1 + i, y1 - j, color);
-//				mlx_pixel_put(data->mlx, data->mlx_win, x1 + i, y1 - j, color);
 			i++;
 		}
 		while ((i <= x1 - x2) && x2 < x1)
 		{
 			if (j >= alpha * i - 1 && j <= alpha * i + 1)
 				mlx_pix_put(data, x1 - i, y1 - j, color);
-//				mlx_pixel_put(data->mlx, data->mlx_win, x1 - i, y1 - j, color);
 			i++;
 		}
 		j++;
@@ -175,7 +171,6 @@ int		is_wall(t_data *data, double x, double y)
 		return (data->conf.world_map[map_index_y][map_index_x] == '1' ? 1 : 0);
 	return (-1);
 }
-
 
 void	check_error_save(t_data *data, int argc, char **argv, int fd)
 {
@@ -532,7 +527,7 @@ char	**getinfo(t_list **list, size_t elm_count)
 		tmp = tmp->next;
 		j--;
 	}
-	ptr[elm_count++] = '\n';
+	ptr[elm_count++] = "";
 	ptr[elm_count] = NULL;
 return (ptr);
 }
@@ -837,6 +832,131 @@ void	render_ceilling_floor(t_data *data)
 	rect(data, 0, data->conf.win_h / 2, data->conf.win_w, data->conf.win_h, data->conf.floor_color);
 }
 
+int		is_sprite(t_data *data, t_ray *ray, t_sprite *tmp)
+{
+	double i;
+	int map_index_x;
+	int map_index_y;
+	double x_ray;
+	double y_ray;
+	
+	i = 0;
+	while((is_wall(data, x_ray, y_ray) == 0) && (int)(calculate_distance(data->player.x, data->player.y, x_ray, y_ray) < (int)(tmp->distance)))
+	{
+		x_ray = data->player.x + cos(ray->angel) * i;
+		y_ray = data->player.y + sin(ray->angel) * i;
+		map_index_x = (int)(x_ray / TILE_SIZE);
+		map_index_y = (int)(y_ray / TILE_SIZE);
+		printf("- %i  + %i\n", (int)(calculate_distance(data->player.x, data->player.y, x_ray, y_ray)), (int)(tmp->distance));
+		if (calculate_distance(data->player.x, data->player.y, x_ray, y_ray) > tmp->distance)
+		{
+			printf("S - %f - %f\n", map_index_x, map_index_y);
+			return (1);
+		}
+		i++;
+	}
+	return (0);
+}
+
+void	sprites_list(t_data *data)
+{
+	int i;
+	int j;
+	int n = 0;
+	t_sprite *tmp;
+
+	i = 0;
+	j = 0;
+	tmp = (t_sprite *)malloc(sizeof(t_sprite));
+	data->sprite = tmp;
+	while (j < data->conf.map_h)
+	{
+		i = 0;
+		while (i < ft_strlen(data->conf.world_map[j]))
+		{
+			if (data->conf.world_map[j][i] == '2')
+			{
+				n++;
+				tmp->x = i * TILE_SIZE;
+				tmp->y = j * TILE_SIZE;
+				tmp->next = (t_sprite *)malloc(sizeof(t_sprite));
+				tmp = tmp->next;
+			}
+			i++;
+		}
+		j++;
+	}
+	tmp->next = NULL;
+}
+void	sprites_distance(t_data *data)
+{
+	int num = 0;
+	t_sprite *tmp;
+
+	tmp = data->sprite;
+	while (tmp != NULL)
+	{
+		num++;
+		tmp->distance = calculate_distance(data->player.x, data->player.y, tmp->x, tmp->y);
+//		printf("%i#(%f)(%f) : %f\n",num, data->player.x, data->player.y, tmp->distance);
+		tmp = tmp->next;
+	}
+}
+
+void	put_sprite(t_data *data, t_ray *ray, int column_id, double scale, int projected_sprite_heigth)
+{
+	t_img	tex;
+	int tex_x;
+	int tex_y;
+	char *c;
+	char *a;
+
+	tex_y = 0;
+	tex_x = column_id;
+	tex = scale_textures(data, data->tex[4], scale, tex_x);
+	while (tex_y < tex.height)
+	{
+		c = data->img.img_addr + ((tex_y + (data->conf.win_h / 2 - projected_sprite_heigth / 2)) * data->img.line_length + column_id * (data->img.bits_per_pixel / 8));
+		a = tex.img_addr + tex_y * tex.line_length + 0 * (tex.bits_per_pixel / 8);
+		*(unsigned int*)c = *(unsigned int*)a;
+		tex_y++;
+	}
+}
+
+
+void	render_sprites(t_data *data)
+{
+	int column_id;
+	double distance_from_player_to_projection;
+	double projected_sprite_heigth;
+	double scale;
+	t_sprite *tmp;
+
+	column_id = 0;
+	tmp = data->sprite;
+	column_id = 0;
+	distance_from_player_to_projection = data->conf.win_w / 2 * tanl(FOV_ANGLE / 2);
+	sprites_distance(data);
+	while(column_id < data->conf.num_rays)
+	{
+		scale = TILE_SIZE / tmp->distance;
+		projected_sprite_heigth = (data->tex[4].height * distance_from_player_to_projection) / tmp->distance;
+		if (is_sprite(data, data->rays[column_id], tmp))
+			put_sprite(data, data->rays[column_id], column_id, scale, projected_sprite_heigth);
+		column_id++;
+	}
+
+
+/*	while (data->sprite != NULL)
+	{
+
+		printf("<%i> x %i y %i\n", i, data->sprite->x, data->sprite->y);
+		data->sprite = data->sprite->next;
+		i++;
+	}*/
+}
+
+
 void	mlx_close(t_data *data)
 {
 	mlx_destroy_window(data->mlx, data->mlx_win);
@@ -887,6 +1007,7 @@ void	update(int keycode, t_data *data)
 	render_rays(data);
 	render_player(data);
 	render_walls(data);
+	render_sprites(data);
 	put_img = data->img;
 	mlx_put_image_to_window(data->mlx, data->mlx_win, put_img.img_ptr, 0, 0);
 }
@@ -912,6 +1033,7 @@ int	main(int argc, char **argv)
 //	printf("<%d><%d>", data.conf.win_w, data.conf.win_h);
 	data.conf.map_h = get_map(data.str, &data);
 	check_map(&data);
+	sprites_list(&data);
 	get_player_location(&data);
 //	printf("%d\n", data.conf.map_h);
 //	for(int z = 0; z < data.conf.map_h; z++)
