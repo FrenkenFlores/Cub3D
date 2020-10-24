@@ -1,11 +1,11 @@
 R 800 640
-NO ./textures/brick.xpm
-SO ./textures/metal.xpm
-WE ./textures/stone.xpm
-EA ./textures/wood.xpm
-S ./textures/
-F 220,100,0
-C 225,30,0
+NO ./textures/book_shelf_nourth.xpm
+SO ./textures/book_shelf_south.xpm
+WE ./textures/book_shelf_west.xpm
+EA ./textures/book_shelf_east.xpm
+S ./textures/wizard.xpm
+F 0,38,77
+C 21,21,21
             1111111111111111111111111
             1000000000110000000000001
             1011000001110000002000001

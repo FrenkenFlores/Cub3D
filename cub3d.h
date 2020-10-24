@@ -94,8 +94,8 @@ typedef struct s_conf
 	int		map_h;
 	double	map_size;
 	int		num_rays;
-	int		cell_color;
-	int		floor_color;
+	unsigned long		ceill_color;
+	unsigned long		floor_color;
 	char	**world_map;
 }	t_conf;
 

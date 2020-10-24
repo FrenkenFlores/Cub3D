@@ -272,9 +272,10 @@ void	get_resolution(char **str, t_data *data, size_t elm_count)
 	size_t	j;
 	size_t i;
 	
-	i = 0;
+	j = 0;
 	while (j < elm_count)
 	{
+		i = 0;
 		while (i < ft_strlen(str[j]))
 		{
 			if (str[j][i] == 'R')
@@ -296,40 +297,102 @@ void	get_resolution(char **str, t_data *data, size_t elm_count)
 		ft_put_error("\nInvalid resolution parameters\n", EINVAL);
 }
 
+unsigned long rgb_hex(int r, int g, int b)
+{   
+    return ((r & 0xff) << 16) + ((g & 0xff) << 8) + (b & 0xff);
+}
+void	get_floor_ceilling(char **str, t_data *data, size_t elm_count)
+{
+	size_t	j;
+	size_t i;
+	int r;
+	int g;
+	int b;
+	
+	j = 0;
+	while (j < elm_count)
+	{
+		i = 0;
+		while (i < ft_strlen(str[j]))
+		{
+			if (str[j][i] == 'F' && str[j][i + 1] == ' ')
+			{
+				i += 1;
+				while (str[j][i] == ' ')
+					i++;
+				r = ft_atoi(str[j] + i++);
+				i += ft_numsize(r);
+				g = ft_atoi(str[j] + i++);
+				i += ft_numsize(g);
+				b = ft_atoi(str[j] + i);
+				data->conf.floor_color = rgb_hex(r, g, b);
+				continue;
+			}
+			if (str[j][i] == 'C' && str[j][i + 1] == ' ')
+			{
+				i += 1;
+				while (str[j][i] == ' ')
+					i++;
+				r = ft_atoi(str[j] + i++);
+				i += ft_numsize(r);
+				g = ft_atoi(str[j] + i++);
+				i += ft_numsize(g);
+				b = ft_atoi(str[j] + i);
+				data->conf.ceill_color = rgb_hex(r, g, b);
+				continue;
+			}
+			i++;
+		}
+		j++;
+	}
+	if (!(data->conf.path_east) || !(data->conf.path_west) || !(data->conf.path_south) || !(data->conf.path_north))
+		ft_put_error("\nDid not find the wall textures\n", EINVAL);
+}
+
+
+
 void	get_textpath(char **str, t_data *data, size_t elm_count)
 {
 	size_t	j;
 	size_t i;
 	
-	i = 0;
+	j = 0;
 	while (j < elm_count)
 	{
+		i = 0;
 		while (i < ft_strlen(str[j]))
 		{
 			if (str[j][i] == 'N' && str[j][i + 1] == 'O')
 			{
-				i++;
+				i += 2;
 				while (str[j][i] == ' ')
 					i++;
 				data->conf.path_north = &(str[j][i]);
 			}
 			if (str[j][i] == 'S' && str[j][i + 1] == 'O')
 			{
-				i++;
+				i += 2;
 				while (str[j][i] == ' ')
 					i++;
 				data->conf.path_south = &(str[j][i]);
 			}
+			if (str[j][i] == 'S' && str[j][i + 1] == ' ')
+			{
+				i += 1;
+				while (str[j][i] == ' ')
+					i++;
+				data->conf.path_sprite = &(str[j][i]);
+			}
 			if (str[j][i] == 'W' && str[j][i + 1] == 'E')
 			{
-				i++;
+				i += 2;
 				while (str[j][i] == ' ')
 					i++;
 				data->conf.path_west = &(str[j][i]);
 			}
 			if (str[j][i] == 'E' && str[j][i + 1] == 'A')
 			{
-				i++;
+				i += 2;
 				while (str[j][i] == ' ')
 					i++;
 				data->conf.path_east = &(str[j][i]);
@@ -338,7 +401,8 @@ void	get_textpath(char **str, t_data *data, size_t elm_count)
 		}
 		j++;
 	}
-	if (!(data->conf.path_east) || !(data->conf.path_west) || !(data->conf.path_south || !(data->conf.path_north))
+//	printf("%s\n", data->conf.path_sprite);
+	if (!(data->conf.path_east) || !(data->conf.path_west) || !(data->conf.path_south) || !(data->conf.path_north))
 		ft_put_error("\nDid not find the wall textures\n", EINVAL);
 }
 
@@ -366,7 +430,7 @@ void	start(t_data *data)
 	data->conf.map_size = 0.3;
 	data->conf.world_map = NULL;
 	data->conf.floor_color = -1;
-	data->conf.cell_color = -1;
+	data->conf.ceill_color = -1;
 	data->sprite = NULL;
 	data->save = 0;
 }
@@ -769,10 +833,8 @@ void	render_walls(t_data *data)
 
 void	render_ceilling_floor(t_data *data)
 {
-	int ceill_color = 0xB5D8FF;
-	int floor_color = 0x53575C;
-	rect(data, 0, 0, data->conf.win_w, data->conf.win_h, ceill_color);
-	rect(data, 0, data->conf.win_h / 2, data->conf.win_w, data->conf.win_h, floor_color);
+	rect(data, 0, 0, data->conf.win_w, data->conf.win_h, data->conf.ceill_color);
+	rect(data, 0, data->conf.win_h / 2, data->conf.win_w, data->conf.win_h, data->conf.floor_color);
 }
 
 void	mlx_close(t_data *data)
@@ -862,7 +924,9 @@ int	main(int argc, char **argv)
 	data.img.img_ptr = mlx_new_image(data.mlx, data.conf.win_w, data.conf.win_h);
 	data.img.img_addr = mlx_get_data_addr(data.img.img_ptr, &data.img.bits_per_pixel, &data.img.line_length, &data.img.endian);
 	mlx_put_image_to_window(data.mlx, data.mlx_win, data.img.img_ptr, 0, 0);
+	get_textpath(data.str, &data, elm_count);
 	get_textures(&data);
+	get_floor_ceilling(data.str, &data, elm_count);
 //	mlx_pixel_put(data.mlx, data.mlx_win, 111, 111, 0xFFFFFFFF);
 //	rect(&data, 2, 2, TILE_SIZE, TILE_SIZE, 0x00FF00);
 //	line(&data, 1, 1, 8, 8, 0x00FFA0);
