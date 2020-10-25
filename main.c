@@ -967,33 +967,25 @@ void	sprites_distance(t_data *data)
 	}
 }
 
-t_img	scale_sprite(t_data *data, t_img tex, double scale, int tex_x)
+t_img	scale_sprites(t_data *data, t_img tex, double scale, int tex_x)
 {
 	t_img sc_tex;
 	int y1;
 	double y2;
-	int x1;
-	double x2;
 
 	sc_tex.height = tex.height * scale;
-	sc_tex.width = tex.width * scale;
+	sc_tex.width = STRIP_WIDTH;
 	sc_tex.img_ptr = mlx_new_image(data->mlx, sc_tex.width, sc_tex.height);
 	sc_tex.img_addr = mlx_get_data_addr(sc_tex.img_ptr, &sc_tex.bits_per_pixel, &sc_tex.line_length, &sc_tex.endian);
-	while (x1 < sc_tex.width)
+	y1 = 0;
+	y2 = 0;
+	while (y1 < sc_tex.height)
 	{
-		y1 = 0;
-		y2 = 0;
-		while (y1 < sc_tex.height)
-		{
-			*(unsigned int*)(sc_tex.img_addr + y1 * sc_tex.line_length + x1 * (sc_tex.bits_per_pixel / 8)) = *(unsigned int*)(tex.img_addr + (int)y2 * tex.line_length + (int)x2 * (tex.bits_per_pixel / 8));
-			y1 += 1;
-			y2 += 1 / scale;
-		}
-		x1 += 1;
-		x2 += 1 / scale;
+		*(unsigned int*)(sc_tex.img_addr + y1 * sc_tex.line_length + 0 * (sc_tex.bits_per_pixel / 8)) = *(unsigned int*)(tex.img_addr + (int)y2 * tex.line_length + tex_x * (tex.bits_per_pixel / 8));
+		y1 += 1;
+		y2 += 1 / scale;
 	}
-		
-		return (sc_tex);
+	return (sc_tex);
 }
 
 void	put_sprite(t_data *data, t_ray *ray, int column_id, double scale, int projected_sprite_heigth)
@@ -1005,23 +997,18 @@ void	put_sprite(t_data *data, t_ray *ray, int column_id, double scale, int proje
 	char *a;
 
 	tex_y = 0;
-	tex_x = 0;
 	scale += (scale <= 0) ? 1 : 0;
-	tex = scale_sprite(data, data->tex[4], scale, tex_x);
-	while (tex_x < tex.width)
+	tex_x = column_id % data->tex[4].width;
+	tex = scale_sprites(data, data->tex[4], scale, tex_x);
+	while (tex_y < tex.height)
 	{
-		tex_y = 0;
-		while (tex_y < tex.height)
-		{
-			c = data->img.img_addr + ((tex_y + (data->conf.win_h / 2 - projected_sprite_heigth / 2)) * data->img.line_length + (column_id + tex_x) * (data->img.bits_per_pixel / 8));
-			a = tex.img_addr + tex_y * tex.line_length + tex_x * (tex.bits_per_pixel / 8);
+		c = data->img.img_addr + ((tex_y + (data->conf.win_h / 2 - projected_sprite_heigth / 2)) * data->img.line_length + column_id * (data->img.bits_per_pixel / 8));
+		a = tex.img_addr + tex_y * tex.line_length + 0 * (tex.bits_per_pixel / 8);
+		if (a > 0)
 			*(unsigned int*)c = *(unsigned int*)a;
-			tex_y++;
-		}
-		tex_x++;
+		tex_y++;
 	}
-	
-	
+
 }
 
 
@@ -1044,10 +1031,8 @@ void	render_sprites(t_data *data)
 		if (data->rays[column_id]->found_horz_hit_sprite == 1 || data->rays[column_id]->found_vert_hit_sprite == 1)
 		{
 			rect(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, data->tex[4].width * data->conf.map_size, data->tex[4].height * data->conf.map_size, 0x0000FF);
-//			circle(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, TILE_SIZE * data->conf.map_size, 0x0000FF);
 			line(data,data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, data->rays[column_id]->wall_hit_x * data->conf.map_size, data->rays[column_id]->wall_hit_y * data->conf.map_size, 0xFF0000);
-//			put_sprite(data, data->rays[column_id], column_id, scale, projected_sprite_heigth);
-//			break;
+			put_sprite(data, data->rays[column_id], column_id, scale, projected_sprite_heigth);
 		}
 		column_id++;
 	}

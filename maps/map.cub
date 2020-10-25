@@ -3,7 +3,7 @@ NO ./textures/book_shelf_nourth.xpm
 SO ./textures/book_shelf_south.xpm
 WE ./textures/book_shelf_west.xpm
 EA ./textures/book_shelf_east.xpm
-S ./textures/stone.xpm
+S ./textures/brick.xpm
 F 0,38,77
 C 21,21,21
             1111111111111111111111111
