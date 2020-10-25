@@ -44,6 +44,7 @@ typedef struct s_ray
 	int		ray_hit_vertical_wall;		// to create the shadow effect
 	int		found_horz_wall_hit;
 	int 	found_vert_wall_hit;
+	int		found_sprite;
 	double	x_step;	// delta x
 	double	y_step;	// delta y
 	double		x_intercept;	// closest interception with the grid

@@ -607,6 +607,41 @@ int		safe_distance(t_data *data, double player_x, double player_y)
 	return (1);
 }
 
+int		ray_hit_sprite(t_ray *ray, t_data *data)
+{
+	ray->found_sprite = 0;
+	ray->found_vert_wall_hit = 0;
+	ray->x_intercept = (int)(data->player.x / TILE_SIZE) * TILE_SIZE;
+	ray->x_intercept += (ray->point_right) ? TILE_SIZE : 0;
+	ray->y_intercept = data->player.y + (ray->x_intercept - data->player.x) * tan(ray->angel);
+	ray->x_step = TILE_SIZE;
+	ray->x_step *= (ray->point_left) ? -1 : 1;
+	ray->y_step = TILE_SIZE * tan(ray->angel);
+	ray->y_step *= (ray->point_up && ray->y_step > 0) ? -1 : 1;
+	ray->y_step *= (ray->point_down && ray->y_step < 0) ? -1 : 1;
+	ray->next_vert_x = ray->x_intercept;
+	ray->next_vert_y = ray->y_intercept;
+	ray->vert_wall_hit_x = 0;
+	ray->vert_wall_hit_y = 0;
+	while (ray->found_sprite == 0)
+	{
+		if (ray->next_vert_y > 0 && is_sprite(data, ray->next_vert_x - (ray->point_left ? 1 : 0), ray->next_vert_y) == 1)
+		{
+			ray->vert_wall_hit_x = ray->next_vert_x;
+			ray->vert_wall_hit_y = ray->next_vert_y;
+			ray->found_sprite = 1;
+		}
+		else if (is_sprite(data, ray->next_vert_x - (ray->point_left ? 1 : 0), ray->next_vert_y) == -1)
+			return (-1);
+		else
+		{
+			ray->next_vert_x += ray->x_step;
+			ray->next_vert_y += ray->y_step;
+		}
+	}
+	return (-1);
+}
+
 void	ray_vert_hit(t_ray *ray, t_data *data)
 {
 	ray->found_vert_wall_hit = 0;
@@ -699,6 +734,7 @@ void	render_rays(t_data *data)
 			exit(EXIT_FAILURE);
 		ray->angel = normalize_angle(angel);
 		ray_pointer(ray);
+		ray_hit_sprite(ray, data);
 		if (ray->angel != 0 || ray->angel != M_PI)
 			ray_horz_hit(ray, data);
 		if (ray->angel != (M_PI / 2) || ray->angel != (3 * M_PI / 2))
@@ -832,30 +868,18 @@ void	render_ceilling_floor(t_data *data)
 	rect(data, 0, data->conf.win_h / 2, data->conf.win_w, data->conf.win_h, data->conf.floor_color);
 }
 
-int		is_sprite(t_data *data, t_ray *ray, t_sprite *tmp)
+int		is_sprite(t_data *data, double x, double y)
 {
-	double i;
 	int map_index_x;
 	int map_index_y;
-	double x_ray;
-	double y_ray;
-	
-	i = 0;
-	while((is_wall(data, x_ray, y_ray) == 0) && (int)(calculate_distance(data->player.x, data->player.y, x_ray, y_ray) < (int)(tmp->distance)))
-	{
-		x_ray = data->player.x + cos(ray->angel) * i;
-		y_ray = data->player.y + sin(ray->angel) * i;
-		map_index_x = (int)(x_ray / TILE_SIZE);
-		map_index_y = (int)(y_ray / TILE_SIZE);
-		printf("- %i  + %i\n", (int)(calculate_distance(data->player.x, data->player.y, x_ray, y_ray)), (int)(tmp->distance));
-		if (calculate_distance(data->player.x, data->player.y, x_ray, y_ray) > tmp->distance)
-		{
-			printf("S - %f - %f\n", map_index_x, map_index_y);
-			return (1);
-		}
-		i++;
-	}
-	return (0);
+
+	map_index_x = (int)(x / TILE_SIZE);
+	map_index_y = (int)(y / TILE_SIZE);
+	if (map_index_x < 0 || map_index_x > data->conf.win_w || map_index_y < 0 || map_index_y > data->conf.win_h || map_index_y >= data->conf.map_h)
+			return (-1);
+	if (ft_strlen(data->conf.world_map[map_index_y]) > map_index_x)
+		return (data->conf.world_map[map_index_y][map_index_x] == '2' ? 1 : 0);
+	return (-1);
 }
 
 void	sprites_list(t_data *data)
@@ -903,23 +927,58 @@ void	sprites_distance(t_data *data)
 	}
 }
 
+t_img	scale_sprite(t_data *data, t_img tex, double scale, int tex_x)
+{
+	t_img sc_tex;
+	int y1;
+	double y2;
+	int x1;
+	double x2;
+
+	sc_tex.height = tex.height * scale;
+	sc_tex.width = tex.width * scale;
+	sc_tex.img_ptr = mlx_new_image(data->mlx, sc_tex.width, sc_tex.height);
+	sc_tex.img_addr = mlx_get_data_addr(sc_tex.img_ptr, &sc_tex.bits_per_pixel, &sc_tex.line_length, &sc_tex.endian);
+	x1 = 0;
+	x2 = 0;
+	while (x1 < sc_tex.width)
+	{
+		y1 = 0;
+		y2 = 0;
+		while (y1 < sc_tex.height)
+		{
+			*(unsigned int*)(sc_tex.img_addr + y1 * sc_tex.line_length + x1 * (sc_tex.bits_per_pixel / 8)) = *(unsigned int*)(tex.img_addr + (int)y2 * tex.line_length + (int)x2 * (tex.bits_per_pixel / 8));
+			y1 += 1;
+			y2 += 1 / scale;
+		}
+		x1 += 1;
+		x2 += 1 / scale;
+	}
+	return (sc_tex);
+}
+
 void	put_sprite(t_data *data, t_ray *ray, int column_id, double scale, int projected_sprite_heigth)
 {
 	t_img	tex;
 	int tex_x;
 	int tex_y;
+	int i = 0;
 	char *c;
 	char *a;
 
-	tex_y = 0;
 	tex_x = column_id;
-	tex = scale_textures(data, data->tex[4], scale, tex_x);
-	while (tex_y < tex.height)
+	tex = scale_sprite(data, data->tex[4], scale, tex_x);
+	while (i < tex.width)
 	{
-		c = data->img.img_addr + ((tex_y + (data->conf.win_h / 2 - projected_sprite_heigth / 2)) * data->img.line_length + column_id * (data->img.bits_per_pixel / 8));
-		a = tex.img_addr + tex_y * tex.line_length + 0 * (tex.bits_per_pixel / 8);
-		*(unsigned int*)c = *(unsigned int*)a;
-		tex_y++;
+		tex_y = 0;
+		while (tex_y < tex.height)
+		{
+			c = data->img.img_addr + ((tex_y + (data->conf.win_h / 2 - projected_sprite_heigth / 2)) * data->img.line_length + (tex_x + i) * (data->img.bits_per_pixel / 8));
+			a = tex.img_addr + tex_y * tex.line_length + i * (tex.bits_per_pixel / 8);
+			*(unsigned int*)c = *(unsigned int*)a;
+			tex_y++;
+		}
+		i++;
 	}
 }
 
@@ -934,15 +993,17 @@ void	render_sprites(t_data *data)
 
 	column_id = 0;
 	tmp = data->sprite;
-	column_id = 0;
 	distance_from_player_to_projection = data->conf.win_w / 2 * tanl(FOV_ANGLE / 2);
 	sprites_distance(data);
 	while(column_id < data->conf.num_rays)
 	{
-		scale = TILE_SIZE / tmp->distance;
+		scale = distance_from_player_to_projection / tmp->distance;
 		projected_sprite_heigth = (data->tex[4].height * distance_from_player_to_projection) / tmp->distance;
-		if (is_sprite(data, data->rays[column_id], tmp))
+		if (data->rays[column_id]->found_sprite == 1)
+		{
 			put_sprite(data, data->rays[column_id], column_id, scale, projected_sprite_heigth);
+			break;
+		}
 		column_id++;
 	}
 
