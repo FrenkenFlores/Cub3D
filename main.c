@@ -666,7 +666,7 @@ int		ray_horz_hit_sprite(t_ray ray, t_data *data)
 			ray.found_horz_hit_sprite = 1;
 			return (1);
 		}
-		else if ((is_sprite(data, ray.next_horz_x, ray.next_horz_y - (ray.point_up ? 1 : 0)) == -1) || (is_wall(data, ray.next_horz_x, ray.next_horz_y - (ray.point_up ? 1 : 0)) != 1))
+		else if ((is_sprite(data, ray.next_horz_x, ray.next_horz_y - (ray.point_up ? 1 : 0)) == -1) || (is_wall(data, ray.next_horz_x, ray.next_horz_y - (ray.point_up ? 1 : 0)) == 1))
 			return (0);
 		else
 		{
@@ -1041,7 +1041,7 @@ void	render_sprites(t_data *data)
 	{
 		scale = distance_from_player_to_projection / tmp->distance;
 		projected_sprite_heigth = (data->tex[4].height * distance_from_player_to_projection) / tmp->distance;
-		if (data->rays[column_id]->found_horz_hit_sprite == 1 || data->rays[column_id]->found_vert_hit_sprite == 1 || (data->rays[column_id]->found_horz_hit_sprite == 1 && data->rays[column_id]->found_vert_hit_sprite == 1))
+		if (data->rays[column_id]->found_horz_hit_sprite == 1 || data->rays[column_id]->found_vert_hit_sprite == 1)
 		{
 			rect(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, data->tex[4].width * data->conf.map_size, data->tex[4].height * data->conf.map_size, 0x0000FF);
 //			circle(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, TILE_SIZE * data->conf.map_size, 0x0000FF);
