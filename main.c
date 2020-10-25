@@ -624,14 +624,14 @@ int	ray_vert_hit_sprite(t_ray ray, t_data *data)
 	ray.vert_wall_hit_y = 0;
 	while (ray.found_vert_hit_sprite == 0)
 	{
-		if (ray.next_vert_y > 0 && is_sprite(data, ray.next_vert_x - (ray.point_left ? 1 : 0), ray.next_vert_y) == 1)
+		if (ray.next_vert_y > 0 && is_sprite(data, ray.next_vert_x - (ray.point_left ? 1 : 0), ray.next_vert_y) == 1 && (ray.next_vert_y > 0 && is_wall(data, ray.next_vert_x - (ray.point_left ? 1 : 0), ray.next_vert_y) != 1))
 		{
 			ray.vert_wall_hit_x = ray.next_vert_x;
 			ray.vert_wall_hit_y = ray.next_vert_y;
 			ray.found_vert_hit_sprite = 1;
 			return (1);
 		}
-		else if (is_sprite(data, ray.next_vert_x - (ray.point_left ? 1 : 0), ray.next_vert_y) == -1)
+		else if (is_sprite(data, ray.next_vert_x - (ray.point_left ? 1 : 0), ray.next_vert_y) == -1 || (ray.next_vert_y < 0 && is_wall(data, ray.next_vert_x - (ray.point_left ? 1 : 0), ray.next_vert_y) == 1) )
 			return (0);
 		else
 		{
@@ -659,14 +659,14 @@ int		ray_horz_hit_sprite(t_ray ray, t_data *data)
 	ray.horz_wall_hit_y = 0;
 	while (ray.found_horz_hit_sprite == 0)
 	{
-		if (is_sprite(data, ray.next_horz_x, ray.next_horz_y - (ray.point_up ? 1 : 0)) == 1)
+		if ((is_sprite(data, ray.next_horz_x, ray.next_horz_y - (ray.point_up ? 1 : 0))) == 1 && (is_wall(data, ray.next_horz_x, ray.next_horz_y - (ray.point_up ? 1 : 0)) != 1))
 		{
 			ray.horz_wall_hit_x = ray.next_horz_x;
 			ray.horz_wall_hit_y = ray.next_horz_y;
 			ray.found_horz_hit_sprite = 1;
 			return (1);
 		}
-		else if (is_sprite(data, ray.next_horz_x, ray.next_horz_y - (ray.point_up ? 1 : 0)) == -1)
+		else if ((is_sprite(data, ray.next_horz_x, ray.next_horz_y - (ray.point_up ? 1 : 0)) == -1) || (is_wall(data, ray.next_horz_x, ray.next_horz_y - (ray.point_up ? 1 : 0)) != 1))
 			return (0);
 		else
 		{
@@ -1028,13 +1028,11 @@ void	put_sprite(t_data *data, t_ray *ray, int column_id, double scale, int proje
 void	render_sprites(t_data *data)
 {
 	int column_id;
-	int w;
 	double distance_from_player_to_projection;
 	double projected_sprite_heigth;
 	double scale;
 	t_sprite *tmp;
 
-	w = 0;
 	column_id = 0;
 	tmp = data->sprite;
 	distance_from_player_to_projection = data->conf.win_w / 2 * tanl(FOV_ANGLE / 2);
@@ -1043,10 +1041,13 @@ void	render_sprites(t_data *data)
 	{
 		scale = distance_from_player_to_projection / tmp->distance;
 		projected_sprite_heigth = (data->tex[4].height * distance_from_player_to_projection) / tmp->distance;
-		if (data->rays[column_id]->found_horz_hit_sprite == 1 || data->rays[column_id]->found_vert_hit_sprite == 1)
+		if (data->rays[column_id]->found_horz_hit_sprite == 1 || data->rays[column_id]->found_vert_hit_sprite == 1 || (data->rays[column_id]->found_horz_hit_sprite == 1 && data->rays[column_id]->found_vert_hit_sprite == 1))
 		{
-			put_sprite(data, data->rays[column_id], column_id, scale, projected_sprite_heigth);
-			break;
+			rect(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, data->tex[4].width * data->conf.map_size, data->tex[4].height * data->conf.map_size, 0x0000FF);
+//			circle(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, TILE_SIZE * data->conf.map_size, 0x0000FF);
+			line(data,data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, data->rays[column_id]->wall_hit_x * data->conf.map_size, data->rays[column_id]->wall_hit_y * data->conf.map_size, 0xFF0000);
+//			put_sprite(data, data->rays[column_id], column_id, scale, projected_sprite_heigth);
+//			break;
 		}
 		column_id++;
 	}
