@@ -1,7 +1,7 @@
 #ifndef CUB3D_H
 # define CUB3D_H
 # define TILE_SIZE 32
-# define FOV_ANGLE 60 * M_PI / 180
+# define FOV_ANGLE 90 * M_PI / 180
 # define STRIP_WIDTH 1
 # include <errno.h>
 # include <stdio.h>

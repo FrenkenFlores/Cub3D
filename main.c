@@ -991,24 +991,37 @@ t_img	scale_sprites(t_data *data, t_img tex, double scale, int tex_x)
 void	put_sprite(t_data *data, t_ray *ray, int column_id, double scale, int projected_sprite_heigth)
 {
 	t_img	tex;
-	int tex_x;
+	int sprite_width;
+	double tex_x;
 	int tex_y;
 	char *c;
 	char *a;
+	int i;
+	static int j = 0;
 
 	tex_y = 0;
+	sprite_width = 0;
 	scale += (scale <= 0) ? 1 : 0;
-	tex_x = column_id % data->tex[4].width;
-	tex = scale_sprites(data, data->tex[4], scale, tex_x);
+	i = 0;
+	while(i < data->conf.num_rays)
+	{
+		if (data->rays[i]->found_horz_hit_sprite == 1 || data->rays[i]->found_vert_hit_sprite == 1)
+			sprite_width++;
+		i++;
+	}
+
+	tex_x = tex_x / (double)(sprite_width / data->tex[4].width);
+	tex = scale_sprites(data, data->tex[4], scale, (int)(j / ((double)(sprite_width) / data->tex[4].width)));
 	while (tex_y < tex.height)
 	{
 		c = data->img.img_addr + ((tex_y + (data->conf.win_h / 2 - projected_sprite_heigth / 2)) * data->img.line_length + column_id * (data->img.bits_per_pixel / 8));
 		a = tex.img_addr + tex_y * tex.line_length + 0 * (tex.bits_per_pixel / 8);
-		if (a > 0)
+		if (*(unsigned int*)a > 0)
 			*(unsigned int*)c = *(unsigned int*)a;
 		tex_y++;
 	}
-
+	j++;
+	j = j % sprite_width;
 }
 
 
