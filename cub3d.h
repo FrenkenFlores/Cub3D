@@ -105,6 +105,10 @@ typedef struct s_sprite
 {
 	int			x;
 	int			y;
+	int			x1;
+	int			y1;
+	int			x2;
+	int			y2;
 	double		dir;
 	double		distance;
 	double		ray_hit_x;

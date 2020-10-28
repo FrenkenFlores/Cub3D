@@ -1,6 +1,15 @@
 #include "cub3d.h"
 
 
+int		ft_min(int a, int b)
+{
+	return((a < b) ? a : b);
+}
+
+int		ft_max(int a, int b)
+{
+	return((a > b) ? a : b);
+}
 
 int		ft_numsize(int num)
 {
@@ -409,8 +418,8 @@ void	start(t_data *data)
 	data->player.walk_directoin = 0;  // +1 : forward, -1 : backward
 	data->player.radius = 16;
 	data->player.rotation_angel = 0;
-	data->player.move_speed = 4.0;
-	data->player.rotation_speed = 3 * (M_PI / 180);
+	data->player.move_speed = 7.0;
+	data->player.rotation_speed = 7 * (M_PI / 180);
 /*	data->ray.angel = 0; //data->player.rotation_angel - (FOV_ANGLE / 2)
 	data->ray.wall_hit_x = 0;
 	data->ray.wall_hit_y = 0;
@@ -606,6 +615,7 @@ int		safe_distance(t_data *data, double player_x, double player_y)
 	}
 	return (1);
 }
+
 
 int	ray_vert_hit_sprite(t_ray ray, t_data *data)
 {
@@ -926,7 +936,6 @@ void	sprites_list(t_data *data)
 {
 	int i;
 	int j;
-	int n = 0;
 	t_sprite *tmp;
 
 	i = 0;
@@ -940,9 +949,8 @@ void	sprites_list(t_data *data)
 		{
 			if (data->conf.world_map[j][i] == '2')
 			{
-				n++;
-				tmp->x = i * TILE_SIZE;
-				tmp->y = j * TILE_SIZE;
+				tmp->x = (i + 1) * TILE_SIZE;
+				tmp->y = (j + 1) * TILE_SIZE;
 				tmp->next = (t_sprite *)malloc(sizeof(t_sprite));
 				tmp = tmp->next;
 			}
@@ -954,7 +962,6 @@ void	sprites_list(t_data *data)
 }
 void	sprites_distance(t_data *data)
 {
-	int num = 0;
 	int x;
 	int y;
 	double angel;
@@ -963,19 +970,59 @@ void	sprites_distance(t_data *data)
 
 	tmp = data->sprite;
 	a = atan((tmp->y - data->player.y) / (tmp->x - data->player.x));
+	angel = M_PI_2;
 	x = data->tex[4].width * cos(a);
 	y = data->tex[4].width * sin(a);
 	while (tmp != NULL)
 	{
-		num++;
+		tmp->x1 = tmp->x + (x * cos(angel) - y * sin(angel));
+		tmp->y1 = tmp->y + (x * sin(angel) + y * cos(angel));
+		tmp->x2 = tmp->x + (x * cos(angel) + y * sin(angel));
+		tmp->y2 = tmp->y + (-1 * x * sin(angel) + y * cos(angel));
 		tmp->distance = calculate_distance(data->player.x, data->player.y, tmp->x, tmp->y);
-		angel = M_PI_2;
-		line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, (tmp->x + (x * cos(angel) - y * sin(angel))) * data->conf.map_size, (tmp->y + (x * sin(angel) + y * cos(angel))) * data->conf.map_size, 0x00FF00);
-		line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, (tmp->x + (x * cos(angel) + y * sin(angel))) * data->conf.map_size, (tmp->y + (-1 * x * sin(angel) + y * cos(angel))) * data->conf.map_size, 0x00FF00);
-		line(data, data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, 0xFF0000);
+//		line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, tmp->x1 * data->conf.map_size, tmp->y1 * data->conf.map_size, 0x00FF00);
+//		line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, tmp->x2 * data->conf.map_size, tmp->y2 * data->conf.map_size, 0x00FF00);
+//		line(data, data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, 0xFF0000);
 		tmp = tmp->next;
-		break;
 	}
+}
+
+int		point_in_segment(t_data * data, t_ray *ray, t_sprite *sprite)
+{
+	double x;
+	double y;
+	double a = abs(data->player.x - ray->wall_hit_x);
+	double b = abs(data->player.y - ray->wall_hit_y);
+	double slope = b / a;
+	x = ft_min(sprite->x1, sprite->x2);
+	y = ft_min(sprite->y1, sprite->y2);
+	circle(data, sprite->x1 * data->conf.map_size, sprite->y1 * data->conf.map_size, 5 * data->conf.map_size, 0x000000);
+	circle(data, sprite->x2 * data->conf.map_size, sprite->y2 * data->conf.map_size, 5 * data->conf.map_size, 0x000000);
+//	if (sprite->x1 == sprite->x2)
+//		return (1);
+//	if (sprite->x1 == sprite->x2 && atan((double)abs(data->player.y - ray->wall_hit_y) / (double)abs(data->player.x - ray->wall_hit_x)) >= atan((double)abs(sprite->y1 - data->player.y) / (double)abs(sprite->x1 - data->player.x))
+//	&& atan((double)abs(data->player.y - ray->wall_hit_y) / (double)abs(data->player.x - ray->wall_hit_x)) <= atan((double)abs(sprite->y2 - data->player.y) / (double)abs(sprite->x2 - data->player.x)))
+//		return (1);
+	if (sprite->x1 == sprite->x2)
+		return (1);
+//	if (sprite->y1 == sprite->y2)
+//		return (1);
+//	if (data->player.x == ray->wall_hit_x && x >= ft_min(sprite->x1, sprite->x2) && x <= ft_max(sprite->x1, sprite->x2))
+//		return (1);
+	while ((int)y < ft_max(sprite->y1, sprite->y2))
+	{
+		x = ft_min(sprite->x1, sprite->x2);
+		while ((int)x < ft_max(sprite->x1, sprite->x2))
+		{
+			if ((int)abs(ray->wall_hit_y - y) == (int)(slope * abs(ray->wall_hit_x - x))
+			&& x >= ft_min(data->player.x, ray->wall_hit_x) && x <= ft_max(data->player.x, ray->wall_hit_x)
+			&& y >= ft_min(data->player.y, ray->wall_hit_y) && y <= ft_max(data->player.y, ray->wall_hit_y))
+				return (1);
+			x += 1;
+		}
+		y += 1;
+	}
+	return (0);
 }
 
 t_img	scale_sprites(t_data *data, t_img tex, double scale, int tex_x)
@@ -1007,19 +1054,11 @@ void	put_sprite(t_data *data, t_ray *ray, int column_id, double scale, int proje
 	int tex_y;
 	char *c;
 	char *a;
-	int i;
-	static int j = 0;
 
 	tex_y = 0;
 	sprite_width = 0;
 	scale += (scale <= 0) ? 1 : 0;
-	i = 0;
-	while(i < data->conf.num_rays)
-	{
-		if (data->rays[i]->found_horz_hit_sprite == 1 || data->rays[i]->found_vert_hit_sprite == 1)
-			sprite_width++;
-		i++;
-	}
+
 	tex_x = column_id % data->tex[4].width;
 //	tex_x = column_id % sprite_width;
 //	tex_x = column_id % sprite_width % data->tex[4].width;
@@ -1034,9 +1073,6 @@ void	put_sprite(t_data *data, t_ray *ray, int column_id, double scale, int proje
 			*(unsigned int*)c = *(unsigned int*)a;
 		tex_y++;
 	}
-	j++;
-	j = j % sprite_width;
-	
 }
 
 
@@ -1052,16 +1088,26 @@ void	render_sprites(t_data *data)
 	tmp = data->sprite;
 	distance_from_player_to_projection = data->conf.win_w / 2 * tanl(FOV_ANGLE / 2);
 	sprites_distance(data);
+	line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, tmp->x1 * data->conf.map_size, tmp->y1 * data->conf.map_size, 0x0000FF);
+	line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, tmp->x2 * data->conf.map_size, tmp->y2 * data->conf.map_size, 0x0000FF);
+	line(data, data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, 0x0000FF);
 	while(column_id < data->conf.num_rays)
 	{
 		scale = distance_from_player_to_projection / tmp->distance;
 		projected_sprite_heigth = (data->tex[4].height * distance_from_player_to_projection) / tmp->distance;
-		if (data->rays[column_id]->found_horz_hit_sprite == 1 || data->rays[column_id]->found_vert_hit_sprite == 1)
+//		if ((int)abs(data->rays[column_id]->wall_hit_y - tmp->y) == (int)abs(data->rays[column_id]->wall_hit_x - tmp->x))
+		if (point_in_segment(data, data->rays[column_id], tmp))
+//		if (data->rays[column_id]->found_horz_hit_sprite == 1 || data->rays[column_id]->found_vert_hit_sprite == 1)
 		{
+			
 //			rect(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, data->tex[4].width * data->conf.map_size, data->tex[4].height * data->conf.map_size, 0x0000FF);
-//			line(data,data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, data->rays[column_id]->wall_hit_x * data->conf.map_size, data->rays[column_id]->wall_hit_y * data->conf.map_size, 0xFF0000);
-			put_sprite(data, data->rays[column_id], column_id, scale, projected_sprite_heigth);
+			line(data,data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, data->rays[column_id]->wall_hit_x * data->conf.map_size, data->rays[column_id]->wall_hit_y * data->conf.map_size, 0xFF0000);
+//			put_sprite(data, data->rays[column_id], column_id, scale, projected_sprite_heigth);
 		}
+//		line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, tmp->x1 * data->conf.map_size, tmp->y1 * data->conf.map_size, 0x0000FF);
+//		line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, tmp->x2 * data->conf.map_size, tmp->y2 * data->conf.map_size, 0x0000FF);
+//		line(data, data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, 0x0000FF);
+
 		column_id++;
 	}
 }
