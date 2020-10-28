@@ -955,15 +955,26 @@ void	sprites_list(t_data *data)
 void	sprites_distance(t_data *data)
 {
 	int num = 0;
+	int x;
+	int y;
+	double angel;
+	double a;
 	t_sprite *tmp;
 
 	tmp = data->sprite;
+	a = atan((tmp->y - data->player.y) / (tmp->x - data->player.x));
+	x = data->tex[4].width * cos(a);
+	y = data->tex[4].width * sin(a);
 	while (tmp != NULL)
 	{
 		num++;
 		tmp->distance = calculate_distance(data->player.x, data->player.y, tmp->x, tmp->y);
-//		printf("%i#(%f)(%f) : %f\n",num, data->player.x, data->player.y, tmp->distance);
+		angel = M_PI_2;
+		line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, (tmp->x + (x * cos(angel) - y * sin(angel))) * data->conf.map_size, (tmp->y + (x * sin(angel) + y * cos(angel))) * data->conf.map_size, 0x00FF00);
+		line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, (tmp->x + (x * cos(angel) + y * sin(angel))) * data->conf.map_size, (tmp->y + (-1 * x * sin(angel) + y * cos(angel))) * data->conf.map_size, 0x00FF00);
+		line(data, data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, 0xFF0000);
 		tmp = tmp->next;
+		break;
 	}
 }
 
@@ -1009,9 +1020,12 @@ void	put_sprite(t_data *data, t_ray *ray, int column_id, double scale, int proje
 			sprite_width++;
 		i++;
 	}
-
-	tex_x = tex_x / (double)(sprite_width / data->tex[4].width);
-	tex = scale_sprites(data, data->tex[4], scale, (int)(j / ((double)(sprite_width) / data->tex[4].width)));
+	tex_x = column_id % data->tex[4].width;
+//	tex_x = column_id % sprite_width;
+//	tex_x = column_id % sprite_width % data->tex[4].width;
+//	tex_x = tex_x / (double)(sprite_width / data->tex[4].width);
+//	printf("%f\n", (double)(sprite_width / data->tex[4].width));
+	tex = scale_sprites(data, data->tex[4], scale, tex_x);
 	while (tex_y < tex.height)
 	{
 		c = data->img.img_addr + ((tex_y + (data->conf.win_h / 2 - projected_sprite_heigth / 2)) * data->img.line_length + column_id * (data->img.bits_per_pixel / 8));
@@ -1022,6 +1036,7 @@ void	put_sprite(t_data *data, t_ray *ray, int column_id, double scale, int proje
 	}
 	j++;
 	j = j % sprite_width;
+	
 }
 
 
@@ -1043,8 +1058,8 @@ void	render_sprites(t_data *data)
 		projected_sprite_heigth = (data->tex[4].height * distance_from_player_to_projection) / tmp->distance;
 		if (data->rays[column_id]->found_horz_hit_sprite == 1 || data->rays[column_id]->found_vert_hit_sprite == 1)
 		{
-			rect(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, data->tex[4].width * data->conf.map_size, data->tex[4].height * data->conf.map_size, 0x0000FF);
-			line(data,data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, data->rays[column_id]->wall_hit_x * data->conf.map_size, data->rays[column_id]->wall_hit_y * data->conf.map_size, 0xFF0000);
+//			rect(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, data->tex[4].width * data->conf.map_size, data->tex[4].height * data->conf.map_size, 0x0000FF);
+//			line(data,data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, data->rays[column_id]->wall_hit_x * data->conf.map_size, data->rays[column_id]->wall_hit_y * data->conf.map_size, 0xFF0000);
 			put_sprite(data, data->rays[column_id], column_id, scale, projected_sprite_heigth);
 		}
 		column_id++;
