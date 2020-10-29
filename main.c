@@ -917,7 +917,7 @@ void	render_ceilling_floor(t_data *data)
 	rect(data, 0, 0, data->conf.win_w, data->conf.win_h, data->conf.ceill_color);
 	rect(data, 0, data->conf.win_h / 2, data->conf.win_w, data->conf.win_h, data->conf.floor_color);
 }
-
+/*
 int		is_sprite(t_data *data, double x, double y)
 {
 	int map_index_x;
@@ -931,6 +931,9 @@ int		is_sprite(t_data *data, double x, double y)
 		return (data->conf.world_map[map_index_y][map_index_x] == '2' ? 1 : 0);
 	return (-1);
 }
+
+
+
 
 void	sprites_list(t_data *data)
 {
@@ -1027,11 +1030,10 @@ int		point_in_segment(t_data * data, t_ray *ray, t_sprite *sprite)
 		while ((int)x < ft_max(sprite->x1, sprite->x2))
 		{
 			if ((int)abs(ray->wall_hit_y - y) == (int)(slope * abs(ray->wall_hit_x - x))
-			&& (int)abs(sprite->y1 - y) <= (int)(slope_2 * abs(sprite->x1 - x))
 			&& x >= ft_min(data->player.x, ray->wall_hit_x) && x <= ft_max(data->player.x, ray->wall_hit_x)
 			&& y >= ft_min(data->player.y, ray->wall_hit_y) && y <= ft_max(data->player.y, ray->wall_hit_y))
 			{
-				circle(data, x * data->conf.map_size, y * data->conf.map_size, 5 * data->conf.map_size, 0x00FF00);
+//				circle(data, x * data->conf.map_size, y * data->conf.map_size, 5 * data->conf.map_size, 0x00FF00);
 				ray->hit_sprite = sqrt(x * x + y * y);
 				return (1);
 			}
@@ -1077,9 +1079,9 @@ void	put_sprite(t_data *data, t_sprite *sprite, t_ray *ray, int column_id, doubl
 	sprite_width = calculate_distance(sprite->x1, sprite->y1, sprite->x2, sprite->y2);
 	scale += (scale <= 0) ? 1 : 0;
 
-	tex_x = (int)ray->hit_sprite % data->tex[4].width;
+//	tex_x = (int)ray->hit_sprite % data->tex[4].width;
 //	tex_x = column_id % sprite_width;
-//	tex_x = column_id % sprite_width % data->tex[4].width;
+	tex_x = column_id % sprite_width % data->tex[4].width;
 //	tex_x = tex_x / (double)(sprite_width / data->tex[4].width);
 //	printf("#%i# %f - %f - %i\n", sprite_width, tex_x , ray->hit_sprite, data->tex[4].width);
 //	tex = scale_sprites(data, data->tex[4], scale, (int)((double)j / ((sprite_width) / (data->tex[4].width))));
@@ -1132,6 +1134,103 @@ void	render_sprites(t_data *data)
 
 		column_id++;
 	}
+}
+
+*/
+
+static void		spr_struct_init(t_data *data, t_sprite_list *sprite)
+{
+	sprite->spr_dir = atan2((double)(sprite->spr_y - data->player.y),
+			(double)(sprite->spr_x - data->player.x));
+	while (sprite->spr_dir - data->player.rotation_angel > M_PI)
+		sprite->spr_dir -= 2 * M_PI;
+	while (sprite->spr_dir - data->player.rotation_angel < -M_PI)
+		sprite->spr_dir += 2 * M_PI;
+	sprite->spr_scr_size = (data->conf.win_h) * TILE_SIZE / sprite->len_from_plr;
+	sprite->spr_scr_size1 = (data->conf.win_w) * TILE_SIZE / sprite->len_from_plr;
+	sprite->h_offset = (sprite->spr_dir - data->player.rotation_angel) * data->conf.win_w
+			/ (M_PI / 3) + data->conf.win_w / 2 - sprite->spr_scr_size1 / 2;
+	sprite->v_offset = data->conf.win_h / 2 - sprite->spr_scr_size / 2;
+	sprite->i = 0;
+	sprite->j = 0;
+	sprite->count = fabs(sprite->h_offset - data->rays[0]->distance);
+	sprite->step = M_PI / (data->conf.win_w * 3.0);
+	sprite->color = 0;
+}
+
+int			get_color(t_img *texture, int x, int y)
+{
+	char		*dst;
+
+	dst = texture->img_addr + (y * texture->line_length
+			+ x * (texture->bits_per_pixel / 8));
+	return (*(int*)dst);
+}
+
+void		my_mlx_pixel_put(t_data *data, int x, int y, int color)
+{
+	char		*dst;
+
+	if (0 <= y && y < data->conf.win_h && 0 <= x && x < data->conf.win_w)
+	{
+		dst = data->img.img_addr + (y * data->img.line_length
+				+ x * (data->img.bits_per_pixel) / 8);
+		*(unsigned int *)dst = color;
+	}
+}
+
+static void		draw_spr_res(t_data *data, t_sprite_list *sprite)
+{
+	while (sprite->j < sprite->spr_scr_size - 2)
+	{
+		if (sprite->v_offset + sprite->j < 0
+			|| sprite->v_offset + sprite->j >= (int)data->conf.win_h)
+		{
+			sprite->j++;
+			continue;
+		}
+		sprite->color = get_color(&data->tex[4],
+				(int)(sprite->i * (data->tex[4].width / TILE_SIZE) * TILE_SIZE
+					/ sprite->spr_scr_size1),
+				(int)(sprite->j * (data->tex[4].height / TILE_SIZE) * TILE_SIZE
+					/ sprite->spr_scr_size));
+		if (sprite->color != 0x980088)
+			my_mlx_pixel_put(data, sprite->h_offset + sprite->i,
+					sprite->v_offset + sprite->j, sprite->color);
+		sprite->j++;
+	}
+	sprite->step += M_PI / (data->conf.win_w * 3.0);
+	sprite->j = 0;
+	sprite->i++;
+	sprite->count++;
+}
+
+void			draw_spr(t_data *data, t_sprite_list *sprite)
+{
+	spr_struct_init(data, sprite);
+	if (sprite->spr_scr_size > 2000)
+		sprite->spr_scr_size = 0;
+	while (sprite->i < sprite->spr_scr_size1)
+	{
+		if (sprite->h_offset + sprite->i < 0 ||
+			sprite->h_offset + sprite->i >= data->conf.win_w)
+		{
+			sprite->i++;
+			continue;
+		}
+		if (data->rays[(int)((int)sprite->h_offset + sprite->i)]
+				< sprite->len_from_plr)
+		{
+			sprite->i++;
+			continue;
+		}
+		draw_spr_res(data, sprite);
+	}
+}
+
+void	render_sprites(t_data *data)
+{
+	draw_spr(data, )
 }
 
 
