@@ -44,6 +44,7 @@ typedef struct s_ray
 	int		ray_hit_vertical_wall;		// to create the shadow effect
 	int		found_horz_wall_hit;
 	int 	found_vert_wall_hit;
+	double	hit_sprite;
 	int		found_vert_hit_sprite;
 	int		found_horz_hit_sprite;
 	double	x_step;	// delta x
@@ -105,10 +106,10 @@ typedef struct s_sprite
 {
 	int			x;
 	int			y;
-	int			x1;
-	int			y1;
-	int			x2;
-	int			y2;
+	double			x1;
+	double			y1;
+	double			x2;
+	double			y2;
 	double		dir;
 	double		distance;
 	double		ray_hit_x;
