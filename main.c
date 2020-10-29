@@ -991,24 +991,25 @@ int		point_in_segment(t_data * data, t_ray *ray, t_sprite *sprite)
 {
 	double x;
 	double y;
-	double a = abs(data->player.x - ray->wall_hit_x);
-	double b = abs(data->player.y - ray->wall_hit_y);
-	double slope = b / a;
+	double a;
+	double b;
+	double slope;
+
+	a = abs(data->player.x - ray->wall_hit_x);
+	b = abs(data->player.y - ray->wall_hit_y);
+	slope = b / a;
 	x = ft_min(sprite->x1, sprite->x2);
 	y = ft_min(sprite->y1, sprite->y2);
-	circle(data, sprite->x1 * data->conf.map_size, sprite->y1 * data->conf.map_size, 5 * data->conf.map_size, 0x000000);
-	circle(data, sprite->x2 * data->conf.map_size, sprite->y2 * data->conf.map_size, 5 * data->conf.map_size, 0x000000);
-//	if (sprite->x1 == sprite->x2)
-//		return (1);
-//	if (sprite->x1 == sprite->x2 && atan((double)abs(data->player.y - ray->wall_hit_y) / (double)abs(data->player.x - ray->wall_hit_x)) >= atan((double)abs(sprite->y1 - data->player.y) / (double)abs(sprite->x1 - data->player.x))
-//	&& atan((double)abs(data->player.y - ray->wall_hit_y) / (double)abs(data->player.x - ray->wall_hit_x)) <= atan((double)abs(sprite->y2 - data->player.y) / (double)abs(sprite->x2 - data->player.x)))
-//		return (1);
 	if (sprite->x1 == sprite->x2)
-		return (1);
-//	if (sprite->y1 == sprite->y2)
-//		return (1);
-//	if (data->player.x == ray->wall_hit_x && x >= ft_min(sprite->x1, sprite->x2) && x <= ft_max(sprite->x1, sprite->x2))
-//		return (1);
+		if (((ray->wall_hit_y - data->player.y) / (ray->wall_hit_x - data->player.x)) >= ((ft_min(sprite->y1, sprite->y2) - data->player.y) / sprite->distance)
+		&& ((ray->wall_hit_y - data->player.y) / (ray->wall_hit_x - data->player.x)) <= ((ft_max(sprite->y1, sprite->y2) - data->player.y) / sprite->distance)
+		&& x >= ft_min(data->player.x, ray->wall_hit_x) && x <= ft_max(data->player.x, ray->wall_hit_x))
+			return (1);
+	if (sprite->y1 == sprite->y2)
+		if (((ray->wall_hit_x - data->player.x) / (ray->wall_hit_y - data->player.y)) >= ((ft_min(sprite->x1, sprite->x2) - data->player.x) / sprite->distance)
+		&& ((ray->wall_hit_x - data->player.x) / (ray->wall_hit_y - data->player.y)) <= ((ft_max(sprite->x1, sprite->x2) - data->player.x) / sprite->distance)
+		&& y >= ft_min(data->player.y, ray->wall_hit_y) && y <= ft_max(data->player.y, ray->wall_hit_y))
+			return (1);
 	while ((int)y < ft_max(sprite->y1, sprite->y2))
 	{
 		x = ft_min(sprite->x1, sprite->x2);
