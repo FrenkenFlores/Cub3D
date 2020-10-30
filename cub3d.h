@@ -114,7 +114,7 @@ typedef struct s_sprite
 	double		distance;
 	double		ray_hit_x;
 	double		ray_hit_y;
-	int			screen_s;
+	int		sprite_width;
 	int			h_off;
 	int			v_off;
 	void		*next;

@@ -431,7 +431,7 @@ void	start(t_data *data)
 	data->ray.ray_hit_vertical_wall = 0;
 */	data->conf.map_h = -1;
 	data->conf.map_w = -1;
-	data->conf.map_size = 0.6;
+	data->conf.map_size = 0.3;
 	data->conf.world_map = NULL;
 	data->conf.floor_color = -1;
 	data->conf.ceill_color = -1;
@@ -983,11 +983,50 @@ void	sprites_distance(t_data *data)
 		tmp->x2 = tmp->x + (x * cos(angel) + y * sin(angel));
 		tmp->y2 = tmp->y + (-1 * x * sin(angel) + y * cos(angel));
 		tmp->distance = calculate_distance(data->player.x, data->player.y, tmp->x, tmp->y);
+		tmp->sprite_width = calculate_distance(tmp->x1, tmp->y1, tmp->x2, tmp->y2);
 //		line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, tmp->x1 * data->conf.map_size, tmp->y1 * data->conf.map_size, 0x00FF00);
 //		line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, tmp->x2 * data->conf.map_size, tmp->y2 * data->conf.map_size, 0x00FF00);
 //		line(data, data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, 0xFF0000);
 		tmp = tmp->next;
 	}
+}
+
+int		point_in_vert_segment(t_data * data, t_ray *ray, t_sprite *sprite, int column_id)
+{
+	double x;
+	double y;
+	double angle;
+
+	angle = (double)tan(abs(ray->wall_hit_y - data->player.y) / (double)abs(ray->wall_hit_x - data->player.x));
+	if (sprite->x1 == sprite->x2
+	&& ((ray->wall_hit_y - data->player.y) / (ray->wall_hit_x - data->player.x)) >= ((ft_min(sprite->y1, sprite->y2) - data->player.y) / sprite->distance)
+	&& ((ray->wall_hit_y - data->player.y) / (ray->wall_hit_x - data->player.x)) <= ((ft_max(sprite->y1, sprite->y2) - data->player.y) / sprite->distance)
+	&& x >= ft_min(data->player.x, ray->wall_hit_x) && x <= ft_max(data->player.x, ray->wall_hit_x))
+	{
+		data->rays[column_id]->hit_sprite = (sprite->distance * angle) + TILE_SIZE / 2.1;
+		return (1);
+	}
+	return (0);
+}
+
+int		point_in_horz_segment(t_data * data, t_ray *ray, t_sprite *sprite, int column_id)
+{
+	double x;
+	double y;
+	double angle;
+
+	angle = (double)tan(abs(ray->wall_hit_x - data->player.x) / (double)abs(ray->wall_hit_y - data->player.y));
+	x = ft_min(sprite->x1, sprite->x2);
+	y = ft_min(sprite->y1, sprite->y2);
+	if (sprite->y1 == sprite->y2
+	&& ((ray->wall_hit_x - data->player.x) / (ray->wall_hit_y - data->player.y)) >= ((ft_min(sprite->x1, sprite->x2) - data->player.x) / sprite->distance)
+	&& ((ray->wall_hit_x - data->player.x) / (ray->wall_hit_y - data->player.y)) <= ((ft_max(sprite->x1, sprite->x2) - data->player.x) / sprite->distance)
+	&& y >= ft_min(data->player.y, ray->wall_hit_y) && y <= ft_max(data->player.y, ray->wall_hit_y))
+	{
+		data->rays[column_id]->hit_sprite = (sprite->distance * angle) + TILE_SIZE / 2.1;
+		return (1);
+	}
+	return (0);
 }
 
 int		point_in_segment(t_data * data, t_ray *ray, t_sprite *sprite, int column_id)
@@ -1005,44 +1044,6 @@ int		point_in_segment(t_data * data, t_ray *ray, t_sprite *sprite, int column_id
 	slope_2 = (double)abs(sprite->y2 - sprite->y1) / abs(sprite->x2 - sprite->x1);
 	x = ft_min(sprite->x1, sprite->x2);
 	y = ft_min(sprite->y1, sprite->y2);
-	if (sprite->x1 == sprite->x2
-	&& ((ray->wall_hit_y - data->player.y) / (ray->wall_hit_x - data->player.x)) >= ((ft_min(sprite->y1, sprite->y2) - data->player.y) / sprite->distance)
-	&& ((ray->wall_hit_y - data->player.y) / (ray->wall_hit_x - data->player.x)) <= ((ft_max(sprite->y1, sprite->y2) - data->player.y) / sprite->distance)
-	&& x >= ft_min(data->player.x, ray->wall_hit_x) && x <= ft_max(data->player.x, ray->wall_hit_x))
-	{
-		while ((int)y < ft_max(sprite->y1, sprite->y2))
-		{
-			if (((ray->wall_hit_y - data->player.y) / (ray->wall_hit_x - data->player.x)) >= ((ft_min(sprite->y1, sprite->y2) - data->player.y) / sprite->distance)
-			&& ((ray->wall_hit_y - data->player.y) / (ray->wall_hit_x - data->player.x)) <= ((ft_max(sprite->y1, sprite->y2) - data->player.y) / sprite->distance)
-			&& x >= ft_min(data->player.x, ray->wall_hit_x) && x <= ft_max(data->player.x, ray->wall_hit_x))
-				{
-					ray->hit_sprite = y;
-					circle(data, x * data->conf.map_size, y * data->conf.map_size, 5 * data->conf.map_size, 0x00FF00);
-				}
-			y++;
-		}
-		return (1);
-	}
-	if (sprite->y1 == sprite->y2
-	&& ((ray->wall_hit_x - data->player.x) / (ray->wall_hit_y - data->player.y)) >= ((ft_min(sprite->x1, sprite->x2) - data->player.x) / sprite->distance)
-	&& (((ray->wall_hit_x - data->player.x) / (ray->wall_hit_y - data->player.y)) >= ((ft_max(sprite->x1, sprite->x2) - data->player.x) / sprite->distance)
-	|| ((ray->wall_hit_x - data->player.x) / (ray->wall_hit_y - data->player.y)) <= ((ft_max(sprite->x1, sprite->x2) - data->player.x) / sprite->distance))
-	&& y >= ft_min(data->player.y, ray->wall_hit_y) && y <= ft_max(data->player.y, ray->wall_hit_y))
-	{
-		while ((int)x < ft_max(sprite->x1, sprite->x2))
-		{
-			if (((ray->wall_hit_x - data->player.x) / (ray->wall_hit_y - data->player.y)) >= ((ft_min(sprite->x1, sprite->x2) - data->player.x) / sprite->distance)
-			&& (((ray->wall_hit_x - data->player.x) / (ray->wall_hit_y - data->player.y)) >= ((ft_max(sprite->x1, sprite->x2) - data->player.x) / sprite->distance)
-			|| ((ray->wall_hit_x - data->player.x) / (ray->wall_hit_y - data->player.y)) <= ((ft_max(sprite->x1, sprite->x2) - data->player.x) / sprite->distance))
-			&& y >= ft_min(data->player.y, ray->wall_hit_y) && y <= ft_max(data->player.y, ray->wall_hit_y))
-			{
-				circle(data, x * data->conf.map_size, y * data->conf.map_size, 5 * data->conf.map_size, 0x00FF00);
-				ray->hit_sprite = x;
-			}
-			x++;
-		}
-		return (1);
-	}
 	while ((int)y <= ft_max(sprite->y1, sprite->y2))
 	{
 		x = ft_min(sprite->x1, sprite->x2);
@@ -1053,7 +1054,7 @@ int		point_in_segment(t_data * data, t_ray *ray, t_sprite *sprite, int column_id
 			&& x >= ft_min(data->player.x, ray->wall_hit_x) && x <= ft_max(data->player.x, ray->wall_hit_x)
 			&& y >= ft_min(data->player.y, ray->wall_hit_y) && y <= ft_max(data->player.y, ray->wall_hit_y))
 			{
-				circle(data, x * data->conf.map_size, y * data->conf.map_size, 5 * data->conf.map_size, 0x00FF00);
+//				circle(data, x * data->conf.map_size, y * data->conf.map_size, 5 * data->conf.map_size, 0x00FF00);
 				ray->hit_sprite = sqrtl((x - ft_min(sprite->x1, sprite->x2)) * (x - ft_min(sprite->x1, sprite->x2)) + (y - ft_min(sprite->y1, sprite->y2)) * (y - ft_min(sprite->y1, sprite->y2)));
 //				printf("%i\n", ray->hit_sprite = sqrt((x - ft_min(sprite->x1, sprite->x2)) * (x - ft_min(sprite->x1, sprite->x2)) + (y - ft_min(sprite->y1, sprite->y2)) * (y - ft_min(sprite->y1, sprite->y2))));
 				return (1);
@@ -1089,7 +1090,6 @@ t_img	scale_sprites(t_data *data, t_img tex, double scale, int tex_x)
 void	put_sprite(t_data *data, t_sprite *sprite, t_ray *ray, int column_id, double scale, int projected_sprite_heigth)
 {
 	t_img	tex;
-	int sprite_width;
 	double tex_x;
 	int tex_y;
 	char *c;
@@ -1097,27 +1097,27 @@ void	put_sprite(t_data *data, t_sprite *sprite, t_ray *ray, int column_id, doubl
 	static int j = 0;
 
 	tex_y = 0;
-	sprite_width = calculate_distance(sprite->x1, sprite->y1, sprite->x2, sprite->y2);
+//	sprite->sprite_width = calculate_distance(sprite->x1, sprite->y1, sprite->x2, sprite->y2);
 	scale += (scale <= 0) ? 1 : 0;
 
 //	tex_x = (int)ray->hit_sprite % data->tex[4].width;
 //	tex_x = column_id % sprite_width;
 //	tex_x = (int)ray->hit_sprite % sprite_width % data->tex[4].width;
-	tex_x = (int)ray->hit_sprite % sprite_width;
+	tex_x = (int)ray->hit_sprite % sprite->sprite_width;
 //	printf("%f\n", data->rays[column_id]->hit_sprite);
 //	tex_x = tex_x / ((double)(sprite_width) / data->tex[4].width);
-	printf("#%i# %f - %f - %i\n", sprite_width, tex_x , ray->hit_sprite, column_id);
+//	printf("#%i# %f - %f - %i\n", sprite_width, tex_x , ray->hit_sprite, column_id);
 //	tex = scale_sprites(data, data->tex[4], scale, (int)((double)j / ((sprite_width) / (data->tex[4].width))));
 	tex = scale_sprites(data, data->tex[4], scale, (int)tex_x);
 	while (tex_y < tex.height)
 	{
 		c = data->img.img_addr + ((tex_y + (data->conf.win_h / 2 - projected_sprite_heigth / 2)) * data->img.line_length + column_id * (data->img.bits_per_pixel / 8));
 		a = tex.img_addr + tex_y * tex.line_length + 0 * (tex.bits_per_pixel / 8);
-		if (*(int*)a >= 0)
+		if (*(int*)a != 0xFFFFFF)
 			*(int*)c = *(int*)a;
 		tex_y++;
 	}
-	j = j % sprite_width;
+	j = j % sprite->sprite_width;
 //	printf("#%i# \n", (int)((double)j / ((double)(sprite_width) / (data->tex[4].width))));
 	j++;
 }
@@ -1130,6 +1130,7 @@ void	render_sprites(t_data *data)
 	double projected_sprite_heigth;
 	double scale;
 	t_sprite *tmp;
+	int k;
 
 	column_id = 0;
 	tmp = data->sprite;
@@ -1143,8 +1144,17 @@ void	render_sprites(t_data *data)
 		scale = distance_from_player_to_projection / tmp->distance;
 		projected_sprite_heigth = (data->tex[4].height * distance_from_player_to_projection) / tmp->distance;
 //		if ((int)abs(data->rays[column_id]->wall_hit_y - tmp->y) == (int)abs(data->rays[column_id]->wall_hit_x - tmp->x))
+		if (point_in_vert_segment(data, data->rays[column_id], tmp, column_id))
+		{
+			line(data,data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, data->rays[column_id]->wall_hit_x * data->conf.map_size, data->rays[column_id]->wall_hit_y * data->conf.map_size, 0xFF0000);
+			put_sprite(data, tmp, data->rays[column_id], column_id, scale, projected_sprite_heigth);
+		}
+		if (point_in_horz_segment(data, data->rays[column_id], tmp, column_id))
+		{
+			line(data,data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, data->rays[column_id]->wall_hit_x * data->conf.map_size, data->rays[column_id]->wall_hit_y * data->conf.map_size, 0xFF0000);
+			put_sprite(data, tmp, data->rays[column_id], column_id, scale, projected_sprite_heigth);
+		}
 		if (point_in_segment(data, data->rays[column_id], tmp, column_id))
-//		if (data->rays[column_id]->found_horz_hit_sprite == 1 || data->rays[column_id]->found_vert_hit_sprite == 1)
 		{
 			
 //			rect(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, data->tex[4].width * data->conf.map_size, data->tex[4].height * data->conf.map_size, 0x0000FF);
