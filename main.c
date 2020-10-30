@@ -974,10 +974,10 @@ void	sprites_distance(t_data *data)
 	tmp = data->sprite;
 	a = atan((tmp->y - data->player.y) / (tmp->x - data->player.x));
 	angel = M_PI_2;
-	x = data->tex[4].width * cos(a);
-	y = data->tex[4].width * sin(a);
+	x = (data->tex[4].width / 2) * cos(a);
+	y = (data->tex[4].width / 2) * sin(a);
 	while (tmp != NULL)
-	{
+	{				//rotation matrix
 		tmp->x1 = tmp->x + (x * cos(angel) - y * sin(angel));
 		tmp->y1 = tmp->y + (x * sin(angel) + y * cos(angel));
 		tmp->x2 = tmp->x + (x * cos(angel) + y * sin(angel));
@@ -1010,18 +1010,16 @@ int		point_in_segment(t_data * data, t_ray *ray, t_sprite *sprite, int column_id
 	&& ((ray->wall_hit_y - data->player.y) / (ray->wall_hit_x - data->player.x)) <= ((ft_max(sprite->y1, sprite->y2) - data->player.y) / sprite->distance)
 	&& x >= ft_min(data->player.x, ray->wall_hit_x) && x <= ft_max(data->player.x, ray->wall_hit_x))
 	{
-		while ((int)y < ft_max(sprite->y1, sprite->y2) && data->rays[column_id])
+		while ((int)y < ft_max(sprite->y1, sprite->y2))
 		{
 			if (((ray->wall_hit_y - data->player.y) / (ray->wall_hit_x - data->player.x)) >= ((ft_min(sprite->y1, sprite->y2) - data->player.y) / sprite->distance)
 			&& ((ray->wall_hit_y - data->player.y) / (ray->wall_hit_x - data->player.x)) <= ((ft_max(sprite->y1, sprite->y2) - data->player.y) / sprite->distance)
 			&& x >= ft_min(data->player.x, ray->wall_hit_x) && x <= ft_max(data->player.x, ray->wall_hit_x))
 				{
-					data->rays[column_id]->hit_sprite = y;
+					ray->hit_sprite = y;
 					circle(data, x * data->conf.map_size, y * data->conf.map_size, 5 * data->conf.map_size, 0x00FF00);
 				}
 			y++;
-			column_id++;
-//			printf("%f - %f\n", data->rays[column_id]->hit_sprite, y);
 		}
 		return (1);
 	}
@@ -1045,10 +1043,10 @@ int		point_in_segment(t_data * data, t_ray *ray, t_sprite *sprite, int column_id
 		}
 		return (1);
 	}
-	while ((int)y < ft_max(sprite->y1, sprite->y2))
+	while ((int)y <= ft_max(sprite->y1, sprite->y2))
 	{
 		x = ft_min(sprite->x1, sprite->x2);
-		while ((int)x < ft_max(sprite->x1, sprite->x2))
+		while ((int)x <= ft_max(sprite->x1, sprite->x2))
 		{
 			if ((abs(ray->wall_hit_y - y) >= (slope * abs(ray->wall_hit_x - x)) - 5 && abs(ray->wall_hit_y - y) <= (slope * abs(ray->wall_hit_x - x)) + 5)
 			&& (abs(sprite->y2 - y) >= (slope_2 * abs(sprite->x2 - x)) - 5 && abs(sprite->y2 - y) <= (slope_2 * abs(sprite->x2 - x)) + 5)
@@ -1056,7 +1054,8 @@ int		point_in_segment(t_data * data, t_ray *ray, t_sprite *sprite, int column_id
 			&& y >= ft_min(data->player.y, ray->wall_hit_y) && y <= ft_max(data->player.y, ray->wall_hit_y))
 			{
 				circle(data, x * data->conf.map_size, y * data->conf.map_size, 5 * data->conf.map_size, 0x00FF00);
-				ray->hit_sprite = sqrt(x * x + y * y);
+				ray->hit_sprite = sqrtl((x - ft_min(sprite->x1, sprite->x2)) * (x - ft_min(sprite->x1, sprite->x2)) + (y - ft_min(sprite->y1, sprite->y2)) * (y - ft_min(sprite->y1, sprite->y2)));
+//				printf("%i\n", ray->hit_sprite = sqrt((x - ft_min(sprite->x1, sprite->x2)) * (x - ft_min(sprite->x1, sprite->x2)) + (y - ft_min(sprite->y1, sprite->y2)) * (y - ft_min(sprite->y1, sprite->y2))));
 				return (1);
 			}
 			x++;
@@ -1105,17 +1104,17 @@ void	put_sprite(t_data *data, t_sprite *sprite, t_ray *ray, int column_id, doubl
 //	tex_x = column_id % sprite_width;
 //	tex_x = (int)ray->hit_sprite % sprite_width % data->tex[4].width;
 	tex_x = (int)ray->hit_sprite % sprite_width;
-	printf("%f\n", data->rays[column_id]->hit_sprite);
-//	tex_x = tex_x / (double)(sprite_width / data->tex[4].width);
-//	printf("#%i# %f - %f - %i\n", sprite_width, tex_x , ray->hit_sprite, data->tex[4].width);
+//	printf("%f\n", data->rays[column_id]->hit_sprite);
+//	tex_x = tex_x / ((double)(sprite_width) / data->tex[4].width);
+	printf("#%i# %f - %f - %i\n", sprite_width, tex_x , ray->hit_sprite, column_id);
 //	tex = scale_sprites(data, data->tex[4], scale, (int)((double)j / ((sprite_width) / (data->tex[4].width))));
-	tex = scale_sprites(data, data->tex[4], scale, tex_x);
+	tex = scale_sprites(data, data->tex[4], scale, (int)tex_x);
 	while (tex_y < tex.height)
 	{
 		c = data->img.img_addr + ((tex_y + (data->conf.win_h / 2 - projected_sprite_heigth / 2)) * data->img.line_length + column_id * (data->img.bits_per_pixel / 8));
 		a = tex.img_addr + tex_y * tex.line_length + 0 * (tex.bits_per_pixel / 8);
-		if (*(unsigned int*)a > 0)
-			*(unsigned int*)c = *(unsigned int*)a;
+		if (*(int*)a >= 0)
+			*(int*)c = *(int*)a;
 		tex_y++;
 	}
 	j = j % sprite_width;
