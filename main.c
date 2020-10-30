@@ -917,7 +917,7 @@ void	render_ceilling_floor(t_data *data)
 	rect(data, 0, 0, data->conf.win_w, data->conf.win_h, data->conf.ceill_color);
 	rect(data, 0, data->conf.win_h / 2, data->conf.win_w, data->conf.win_h, data->conf.floor_color);
 }
-/*
+
 int		is_sprite(t_data *data, double x, double y)
 {
 	int map_index_x;
@@ -990,7 +990,7 @@ void	sprites_distance(t_data *data)
 	}
 }
 
-int		point_in_segment(t_data * data, t_ray *ray, t_sprite *sprite)
+int		point_in_segment(t_data * data, t_ray *ray, t_sprite *sprite, int column_id)
 {
 	double x;
 	double y;
@@ -1005,41 +1005,63 @@ int		point_in_segment(t_data * data, t_ray *ray, t_sprite *sprite)
 	slope_2 = (double)abs(sprite->y2 - sprite->y1) / abs(sprite->x2 - sprite->x1);
 	x = ft_min(sprite->x1, sprite->x2);
 	y = ft_min(sprite->y1, sprite->y2);
-	if (sprite->x1 == sprite->x2)
-		if (((ray->wall_hit_y - data->player.y) / (ray->wall_hit_x - data->player.x)) >= ((ft_min(sprite->y1, sprite->y2) - data->player.y) / sprite->distance)
-		&& ((ray->wall_hit_y - data->player.y) / (ray->wall_hit_x - data->player.x)) <= ((ft_max(sprite->y1, sprite->y2) - data->player.y) / sprite->distance)
-		&& x >= ft_min(data->player.x, ray->wall_hit_x) && x <= ft_max(data->player.x, ray->wall_hit_x))
+	if (sprite->x1 == sprite->x2
+	&& ((ray->wall_hit_y - data->player.y) / (ray->wall_hit_x - data->player.x)) >= ((ft_min(sprite->y1, sprite->y2) - data->player.y) / sprite->distance)
+	&& ((ray->wall_hit_y - data->player.y) / (ray->wall_hit_x - data->player.x)) <= ((ft_max(sprite->y1, sprite->y2) - data->player.y) / sprite->distance)
+	&& x >= ft_min(data->player.x, ray->wall_hit_x) && x <= ft_max(data->player.x, ray->wall_hit_x))
+	{
+		while ((int)y < ft_max(sprite->y1, sprite->y2) && data->rays[column_id])
+		{
+			if (((ray->wall_hit_y - data->player.y) / (ray->wall_hit_x - data->player.x)) >= ((ft_min(sprite->y1, sprite->y2) - data->player.y) / sprite->distance)
+			&& ((ray->wall_hit_y - data->player.y) / (ray->wall_hit_x - data->player.x)) <= ((ft_max(sprite->y1, sprite->y2) - data->player.y) / sprite->distance)
+			&& x >= ft_min(data->player.x, ray->wall_hit_x) && x <= ft_max(data->player.x, ray->wall_hit_x))
+				{
+					data->rays[column_id]->hit_sprite = y;
+					circle(data, x * data->conf.map_size, y * data->conf.map_size, 5 * data->conf.map_size, 0x00FF00);
+				}
+			y++;
+			column_id++;
+//			printf("%f - %f\n", data->rays[column_id]->hit_sprite, y);
+		}
+		return (1);
+	}
+	if (sprite->y1 == sprite->y2
+	&& ((ray->wall_hit_x - data->player.x) / (ray->wall_hit_y - data->player.y)) >= ((ft_min(sprite->x1, sprite->x2) - data->player.x) / sprite->distance)
+	&& (((ray->wall_hit_x - data->player.x) / (ray->wall_hit_y - data->player.y)) >= ((ft_max(sprite->x1, sprite->x2) - data->player.x) / sprite->distance)
+	|| ((ray->wall_hit_x - data->player.x) / (ray->wall_hit_y - data->player.y)) <= ((ft_max(sprite->x1, sprite->x2) - data->player.x) / sprite->distance))
+	&& y >= ft_min(data->player.y, ray->wall_hit_y) && y <= ft_max(data->player.y, ray->wall_hit_y))
+	{
+		while ((int)x < ft_max(sprite->x1, sprite->x2))
+		{
+			if (((ray->wall_hit_x - data->player.x) / (ray->wall_hit_y - data->player.y)) >= ((ft_min(sprite->x1, sprite->x2) - data->player.x) / sprite->distance)
+			&& (((ray->wall_hit_x - data->player.x) / (ray->wall_hit_y - data->player.y)) >= ((ft_max(sprite->x1, sprite->x2) - data->player.x) / sprite->distance)
+			|| ((ray->wall_hit_x - data->player.x) / (ray->wall_hit_y - data->player.y)) <= ((ft_max(sprite->x1, sprite->x2) - data->player.x) / sprite->distance))
+			&& y >= ft_min(data->player.y, ray->wall_hit_y) && y <= ft_max(data->player.y, ray->wall_hit_y))
 			{
-//				ray->hit_sprite = sqrt(x * x + y * y);
-//				circle(data, x * data->conf.map_size, y * data->conf.map_size, 5 * data->conf.map_size, 0x00FF00);
-				return (1);
+				circle(data, x * data->conf.map_size, y * data->conf.map_size, 5 * data->conf.map_size, 0x00FF00);
+				ray->hit_sprite = x;
 			}
-	if (sprite->y1 == sprite->y2)
-		if (((ray->wall_hit_x - data->player.x) / (ray->wall_hit_y - data->player.y)) >= ((ft_min(sprite->x1, sprite->x2) - data->player.x) / sprite->distance)
-		&& (((ray->wall_hit_x - data->player.x) / (ray->wall_hit_y - data->player.y)) >= ((ft_max(sprite->x1, sprite->x2) - data->player.x) / sprite->distance)
-		|| ((ray->wall_hit_x - data->player.x) / (ray->wall_hit_y - data->player.y)) <= ((ft_max(sprite->x1, sprite->x2) - data->player.x) / sprite->distance))
-		&& y >= ft_min(data->player.y, ray->wall_hit_y) && y <= ft_max(data->player.y, ray->wall_hit_y))
-			{
-//				circle(data, x * data->conf.map_size, y * data->conf.map_size, 5 * data->conf.map_size, 0x00FF00);
-//				ray->hit_sprite = sqrt(x * x + y * y);
-				return (1);
-			}
+			x++;
+		}
+		return (1);
+	}
 	while ((int)y < ft_max(sprite->y1, sprite->y2))
 	{
 		x = ft_min(sprite->x1, sprite->x2);
 		while ((int)x < ft_max(sprite->x1, sprite->x2))
 		{
-			if ((int)abs(ray->wall_hit_y - y) == (int)(slope * abs(ray->wall_hit_x - x))
+			if ((abs(ray->wall_hit_y - y) >= (slope * abs(ray->wall_hit_x - x)) - 5 && abs(ray->wall_hit_y - y) <= (slope * abs(ray->wall_hit_x - x)) + 5)
+			&& (abs(sprite->y2 - y) >= (slope_2 * abs(sprite->x2 - x)) - 5 && abs(sprite->y2 - y) <= (slope_2 * abs(sprite->x2 - x)) + 5)
 			&& x >= ft_min(data->player.x, ray->wall_hit_x) && x <= ft_max(data->player.x, ray->wall_hit_x)
 			&& y >= ft_min(data->player.y, ray->wall_hit_y) && y <= ft_max(data->player.y, ray->wall_hit_y))
 			{
-//				circle(data, x * data->conf.map_size, y * data->conf.map_size, 5 * data->conf.map_size, 0x00FF00);
+				circle(data, x * data->conf.map_size, y * data->conf.map_size, 5 * data->conf.map_size, 0x00FF00);
 				ray->hit_sprite = sqrt(x * x + y * y);
 				return (1);
 			}
-			x += 1;
+			x++;
 		}
-		y += 1;
+		y++;
 	}
 	return (0);
 }
@@ -1081,7 +1103,9 @@ void	put_sprite(t_data *data, t_sprite *sprite, t_ray *ray, int column_id, doubl
 
 //	tex_x = (int)ray->hit_sprite % data->tex[4].width;
 //	tex_x = column_id % sprite_width;
-	tex_x = column_id % sprite_width % data->tex[4].width;
+//	tex_x = (int)ray->hit_sprite % sprite_width % data->tex[4].width;
+	tex_x = (int)ray->hit_sprite % sprite_width;
+	printf("%f\n", data->rays[column_id]->hit_sprite);
 //	tex_x = tex_x / (double)(sprite_width / data->tex[4].width);
 //	printf("#%i# %f - %f - %i\n", sprite_width, tex_x , ray->hit_sprite, data->tex[4].width);
 //	tex = scale_sprites(data, data->tex[4], scale, (int)((double)j / ((sprite_width) / (data->tex[4].width))));
@@ -1095,7 +1119,7 @@ void	put_sprite(t_data *data, t_sprite *sprite, t_ray *ray, int column_id, doubl
 		tex_y++;
 	}
 	j = j % sprite_width;
-	printf("#%i# \n", (int)((double)j / ((double)(sprite_width) / (data->tex[4].width))));
+//	printf("#%i# \n", (int)((double)j / ((double)(sprite_width) / (data->tex[4].width))));
 	j++;
 }
 
@@ -1120,7 +1144,7 @@ void	render_sprites(t_data *data)
 		scale = distance_from_player_to_projection / tmp->distance;
 		projected_sprite_heigth = (data->tex[4].height * distance_from_player_to_projection) / tmp->distance;
 //		if ((int)abs(data->rays[column_id]->wall_hit_y - tmp->y) == (int)abs(data->rays[column_id]->wall_hit_x - tmp->x))
-		if (point_in_segment(data, data->rays[column_id], tmp))
+		if (point_in_segment(data, data->rays[column_id], tmp, column_id))
 //		if (data->rays[column_id]->found_horz_hit_sprite == 1 || data->rays[column_id]->found_vert_hit_sprite == 1)
 		{
 			
@@ -1136,8 +1160,8 @@ void	render_sprites(t_data *data)
 	}
 }
 
-*/
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static void		spr_struct_init(t_data *data, t_sprite_list *sprite)
 {
 	sprite->spr_dir = atan2((double)(sprite->spr_y - data->player.y),
@@ -1228,11 +1252,11 @@ void			draw_spr(t_data *data, t_sprite_list *sprite)
 	}
 }
 
-void	render_sprites(t_data *data)
+void	render_sprites_2(t_data *data)
 {
-	draw_spr(data, )
+	draw_spr(data, data->sprite_list);
 }
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void	mlx_close(t_data *data)
 {
