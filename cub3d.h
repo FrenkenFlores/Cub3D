@@ -21,12 +21,6 @@ typedef struct s_list
     struct s_list	*next;
 }	t_list;
 
-typedef struct s_position
-{
-	double	x;
-	double	y;
-}	t_position;
-
 typedef struct s_ray
 {
 	float 	angel; //player.rotationAngel - (FOV_ANGLE / 2);
@@ -47,14 +41,12 @@ typedef struct s_ray
 	double	hit_sprite;
 	double	x_step;	// delta x
 	double	y_step;	// delta y
-	double		x_intercept;	// closest interception with the grid
+	double	x_intercept;	// closest interception with the grid
 	double 	y_intercept;
 	double 	next_horz_y;
 	double 	next_horz_x;
 	double 	next_vert_y;
 	double 	next_vert_x;
-
-//	struct s_ray	*next_ray;
 }	t_ray;
 
 typedef struct s_player
@@ -86,10 +78,10 @@ typedef struct s_conf
 	char	*path_west;
 	char	*path_sprite;
 	int		str_num;
-	int		column;
+	int		screen_size_x;
+	int		screen_size_y;
 	int		win_h;
 	int		win_w;
-	int		map_w;
 	int		map_h;
 	double	map_size;
 	int		map_on_off;
@@ -112,8 +104,6 @@ typedef struct s_sprite
 	double		ray_hit_x;
 	double		ray_hit_y;
 	int		sprite_width;
-	int			h_off;
-	int			v_off;
 	void		*next;
 }	t_sprite;
 

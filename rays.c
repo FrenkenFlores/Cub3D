@@ -3,7 +3,6 @@
 void	render_rays(t_data *data)
 {
 	t_ray *ray;
-	double i;
 	int column_id;
 	int num_rays;
 	float angel;
@@ -19,7 +18,6 @@ void	render_rays(t_data *data)
 		exit(EXIT_FAILURE);
 	while(column_id < num_rays)
 	{
-		i = 0;
 		if(!(ray = (t_ray *)malloc(sizeof(t_ray))))
 			exit(EXIT_FAILURE);
 		ray->angel = normalize_angle(angel);

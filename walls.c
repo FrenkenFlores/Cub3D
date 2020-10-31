@@ -15,7 +15,6 @@ void	render_walls(t_data *data)
 		distance_from_player_to_wall = (data->rays[column_id]->distance) * cos(data->rays[column_id]->angel - data->player.rotation_angel);
 		projected_wall_heigth = (TILE_SIZE * distance_from_player_to_projection) / distance_from_player_to_wall;
 		scale = distance_from_player_to_projection / distance_from_player_to_wall;
-//		wall_color(ray);
 		texture_walls(data, data->rays[column_id], column_id, scale, projected_wall_heigth);
 		column_id++;
 	}
