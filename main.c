@@ -984,9 +984,6 @@ void	sprites_distance(t_data *data)
 		tmp->y2 = tmp->y + (-1 * x * sin(angel) + y * cos(angel));
 		tmp->distance = calculate_distance(data->player.x, data->player.y, tmp->x, tmp->y);
 		tmp->sprite_width = calculate_distance(tmp->x1, tmp->y1, tmp->x2, tmp->y2);
-//		line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, tmp->x1 * data->conf.map_size, tmp->y1 * data->conf.map_size, 0x00FF00);
-//		line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, tmp->x2 * data->conf.map_size, tmp->y2 * data->conf.map_size, 0x00FF00);
-//		line(data, data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, 0xFF0000);
 		tmp = tmp->next;
 	}
 }
@@ -1054,9 +1051,7 @@ int		point_in_segment(t_data * data, t_ray *ray, t_sprite *sprite, int column_id
 			&& x >= ft_min(data->player.x, ray->wall_hit_x) && x <= ft_max(data->player.x, ray->wall_hit_x)
 			&& y >= ft_min(data->player.y, ray->wall_hit_y) && y <= ft_max(data->player.y, ray->wall_hit_y))
 			{
-//				circle(data, x * data->conf.map_size, y * data->conf.map_size, 5 * data->conf.map_size, 0x00FF00);
 				ray->hit_sprite = sqrtl((x - ft_min(sprite->x1, sprite->x2)) * (x - ft_min(sprite->x1, sprite->x2)) + (y - ft_min(sprite->y1, sprite->y2)) * (y - ft_min(sprite->y1, sprite->y2)));
-//				printf("%i\n", ray->hit_sprite = sqrt((x - ft_min(sprite->x1, sprite->x2)) * (x - ft_min(sprite->x1, sprite->x2)) + (y - ft_min(sprite->y1, sprite->y2)) * (y - ft_min(sprite->y1, sprite->y2))));
 				return (1);
 			}
 			x++;
@@ -1094,20 +1089,10 @@ void	put_sprite(t_data *data, t_sprite *sprite, t_ray *ray, int column_id, doubl
 	int tex_y;
 	char *c;
 	char *a;
-	static int j = 0;
 
 	tex_y = 0;
-//	sprite->sprite_width = calculate_distance(sprite->x1, sprite->y1, sprite->x2, sprite->y2);
 	scale += (scale <= 0) ? 1 : 0;
-
-//	tex_x = (int)ray->hit_sprite % data->tex[4].width;
-//	tex_x = column_id % sprite_width;
-//	tex_x = (int)ray->hit_sprite % sprite_width % data->tex[4].width;
 	tex_x = (int)ray->hit_sprite % sprite->sprite_width;
-//	printf("%f\n", data->rays[column_id]->hit_sprite);
-//	tex_x = tex_x / ((double)(sprite_width) / data->tex[4].width);
-//	printf("#%i# %f - %f - %i\n", sprite_width, tex_x , ray->hit_sprite, column_id);
-//	tex = scale_sprites(data, data->tex[4], scale, (int)((double)j / ((sprite_width) / (data->tex[4].width))));
 	tex = scale_sprites(data, data->tex[4], scale, (int)tex_x);
 	while (tex_y < tex.height)
 	{
@@ -1117,9 +1102,6 @@ void	put_sprite(t_data *data, t_sprite *sprite, t_ray *ray, int column_id, doubl
 			*(int*)c = *(int*)a;
 		tex_y++;
 	}
-	j = j % sprite->sprite_width;
-//	printf("#%i# \n", (int)((double)j / ((double)(sprite_width) / (data->tex[4].width))));
-	j++;
 }
 
 
@@ -1130,142 +1112,40 @@ void	render_sprites(t_data *data)
 	double projected_sprite_heigth;
 	double scale;
 	t_sprite *tmp;
-	int k;
 
-	column_id = 0;
 	tmp = data->sprite;
 	distance_from_player_to_projection = data->conf.win_w / 2 * tanl(FOV_ANGLE / 2);
 	sprites_distance(data);
-	line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, tmp->x1 * data->conf.map_size, tmp->y1 * data->conf.map_size, 0x0000FF);
-	line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, tmp->x2 * data->conf.map_size, tmp->y2 * data->conf.map_size, 0x0000FF);
-	line(data, data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, 0x0000FF);
-	while(column_id < data->conf.num_rays)
+	while (tmp->next)
 	{
-		scale = distance_from_player_to_projection / tmp->distance;
-		projected_sprite_heigth = (data->tex[4].height * distance_from_player_to_projection) / tmp->distance;
-//		if ((int)abs(data->rays[column_id]->wall_hit_y - tmp->y) == (int)abs(data->rays[column_id]->wall_hit_x - tmp->x))
-		if (point_in_vert_segment(data, data->rays[column_id], tmp, column_id))
+		column_id = 0;
+		while(column_id < data->conf.num_rays)
 		{
-			line(data,data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, data->rays[column_id]->wall_hit_x * data->conf.map_size, data->rays[column_id]->wall_hit_y * data->conf.map_size, 0xFF0000);
-			put_sprite(data, tmp, data->rays[column_id], column_id, scale, projected_sprite_heigth);
+			scale = distance_from_player_to_projection / tmp->distance;
+			projected_sprite_heigth = (data->tex[4].height * distance_from_player_to_projection) / tmp->distance;
+			if (point_in_vert_segment(data, data->rays[column_id], tmp, column_id))
+			{
+				line(data,data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, data->rays[column_id]->wall_hit_x * data->conf.map_size, data->rays[column_id]->wall_hit_y * data->conf.map_size, 0xFF0000);
+				put_sprite(data, tmp, data->rays[column_id], column_id, scale, projected_sprite_heigth);
+			}
+			if (point_in_horz_segment(data, data->rays[column_id], tmp, column_id))
+			{
+				line(data,data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, data->rays[column_id]->wall_hit_x * data->conf.map_size, data->rays[column_id]->wall_hit_y * data->conf.map_size, 0xFF0000);
+				put_sprite(data, tmp, data->rays[column_id], column_id, scale, projected_sprite_heigth);
+			}
+			if (point_in_segment(data, data->rays[column_id], tmp, column_id))
+			{
+				line(data,data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, data->rays[column_id]->wall_hit_x * data->conf.map_size, data->rays[column_id]->wall_hit_y * data->conf.map_size, 0xFF0000);
+				put_sprite(data, tmp, data->rays[column_id], column_id, scale, projected_sprite_heigth);
+			}
+			column_id++;
 		}
-		if (point_in_horz_segment(data, data->rays[column_id], tmp, column_id))
-		{
-			line(data,data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, data->rays[column_id]->wall_hit_x * data->conf.map_size, data->rays[column_id]->wall_hit_y * data->conf.map_size, 0xFF0000);
-			put_sprite(data, tmp, data->rays[column_id], column_id, scale, projected_sprite_heigth);
-		}
-		if (point_in_segment(data, data->rays[column_id], tmp, column_id))
-		{
-			
-//			rect(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, data->tex[4].width * data->conf.map_size, data->tex[4].height * data->conf.map_size, 0x0000FF);
-			line(data,data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, data->rays[column_id]->wall_hit_x * data->conf.map_size, data->rays[column_id]->wall_hit_y * data->conf.map_size, 0xFF0000);
-			put_sprite(data, tmp, data->rays[column_id], column_id, scale, projected_sprite_heigth);
-		}
-//		line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, tmp->x1 * data->conf.map_size, tmp->y1 * data->conf.map_size, 0x0000FF);
-//		line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, tmp->x2 * data->conf.map_size, tmp->y2 * data->conf.map_size, 0x0000FF);
-//		line(data, data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, 0x0000FF);
-
-		column_id++;
+		line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, tmp->x1 * data->conf.map_size, tmp->y1 * data->conf.map_size, 0x0000FF);
+		line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, tmp->x2 * data->conf.map_size, tmp->y2 * data->conf.map_size, 0x0000FF);
+		line(data, data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, 0x0000FF);
+		tmp = tmp->next;
 	}
 }
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-static void		spr_struct_init(t_data *data, t_sprite_list *sprite)
-{
-	sprite->spr_dir = atan2((double)(sprite->spr_y - data->player.y),
-			(double)(sprite->spr_x - data->player.x));
-	while (sprite->spr_dir - data->player.rotation_angel > M_PI)
-		sprite->spr_dir -= 2 * M_PI;
-	while (sprite->spr_dir - data->player.rotation_angel < -M_PI)
-		sprite->spr_dir += 2 * M_PI;
-	sprite->spr_scr_size = (data->conf.win_h) * TILE_SIZE / sprite->len_from_plr;
-	sprite->spr_scr_size1 = (data->conf.win_w) * TILE_SIZE / sprite->len_from_plr;
-	sprite->h_offset = (sprite->spr_dir - data->player.rotation_angel) * data->conf.win_w
-			/ (M_PI / 3) + data->conf.win_w / 2 - sprite->spr_scr_size1 / 2;
-	sprite->v_offset = data->conf.win_h / 2 - sprite->spr_scr_size / 2;
-	sprite->i = 0;
-	sprite->j = 0;
-	sprite->count = fabs(sprite->h_offset - data->rays[0]->distance);
-	sprite->step = M_PI / (data->conf.win_w * 3.0);
-	sprite->color = 0;
-}
-
-int			get_color(t_img *texture, int x, int y)
-{
-	char		*dst;
-
-	dst = texture->img_addr + (y * texture->line_length
-			+ x * (texture->bits_per_pixel / 8));
-	return (*(int*)dst);
-}
-
-void		my_mlx_pixel_put(t_data *data, int x, int y, int color)
-{
-	char		*dst;
-
-	if (0 <= y && y < data->conf.win_h && 0 <= x && x < data->conf.win_w)
-	{
-		dst = data->img.img_addr + (y * data->img.line_length
-				+ x * (data->img.bits_per_pixel) / 8);
-		*(unsigned int *)dst = color;
-	}
-}
-
-static void		draw_spr_res(t_data *data, t_sprite_list *sprite)
-{
-	while (sprite->j < sprite->spr_scr_size - 2)
-	{
-		if (sprite->v_offset + sprite->j < 0
-			|| sprite->v_offset + sprite->j >= (int)data->conf.win_h)
-		{
-			sprite->j++;
-			continue;
-		}
-		sprite->color = get_color(&data->tex[4],
-				(int)(sprite->i * (data->tex[4].width / TILE_SIZE) * TILE_SIZE
-					/ sprite->spr_scr_size1),
-				(int)(sprite->j * (data->tex[4].height / TILE_SIZE) * TILE_SIZE
-					/ sprite->spr_scr_size));
-		if (sprite->color != 0x980088)
-			my_mlx_pixel_put(data, sprite->h_offset + sprite->i,
-					sprite->v_offset + sprite->j, sprite->color);
-		sprite->j++;
-	}
-	sprite->step += M_PI / (data->conf.win_w * 3.0);
-	sprite->j = 0;
-	sprite->i++;
-	sprite->count++;
-}
-
-void			draw_spr(t_data *data, t_sprite_list *sprite)
-{
-	spr_struct_init(data, sprite);
-	if (sprite->spr_scr_size > 2000)
-		sprite->spr_scr_size = 0;
-	while (sprite->i < sprite->spr_scr_size1)
-	{
-		if (sprite->h_offset + sprite->i < 0 ||
-			sprite->h_offset + sprite->i >= data->conf.win_w)
-		{
-			sprite->i++;
-			continue;
-		}
-		if (data->rays[(int)((int)sprite->h_offset + sprite->i)]
-				< sprite->len_from_plr)
-		{
-			sprite->i++;
-			continue;
-		}
-		draw_spr_res(data, sprite);
-	}
-}
-
-void	render_sprites_2(t_data *data)
-{
-	draw_spr(data, data->sprite_list);
-}
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void	mlx_close(t_data *data)
 {
