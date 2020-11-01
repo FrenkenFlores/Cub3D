@@ -86,6 +86,7 @@ typedef struct s_conf
 	double	map_size;
 	int		map_on_off;
 	int		num_rays;
+	int		num_sprites;
 	unsigned long		ceill_color;
 	unsigned long		floor_color;
 	char	**world_map;
@@ -139,12 +140,10 @@ typedef struct s_data
 	t_img		img;
 	t_img		tex[5];
 	t_sprite	*sprite;
-	t_sprite_list *sprite_list;
 }	t_data;
 
 
 
-void	update(int keycode, t_data *data);
 void	sprites_list(t_data *data);
 void	sprites_conf(t_data *data);
 t_img	scale_sprites(t_data *data, t_img tex, double scale, int tex_x);
@@ -189,7 +188,6 @@ void	check_error_save(t_data *data, int argc, char **argv, int fd);
 void	ft_put_error(char *s, int id);
 void	start(t_data *data);
 size_t	make_list(int fd, t_list **list);
-t_list	*push_back(char *str, t_list *old_list);
 void	get_player_location(t_data *data);
 void	get_resolution(char **str, t_data *data, size_t elm_count);
 void	get_floor_ceilling(char **str, t_data *data, size_t elm_count);

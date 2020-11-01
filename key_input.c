@@ -36,6 +36,8 @@ void	key_input(int keycode, t_data *data)
 
 void	mlx_close(t_data *data)
 {
+	if (data == 0)
+		exit(EXIT_SUCCESS);
 	mlx_destroy_window(data->mlx, data->mlx_win);
 	exit(EXIT_SUCCESS);
 }
