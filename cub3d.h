@@ -129,7 +129,7 @@ typedef struct s_data
 }	t_data;
 
 
-
+int	mlx_get_screen_size(void *mlx_ptr, int *sizex, int *sizey);
 void	update(int keycode, t_data *data);
 void	sprites_list(t_data *data);
 void	sprites_conf(t_data *data);

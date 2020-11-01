@@ -97,6 +97,8 @@ int	main(int argc, char **argv)
 	int fd;
 	t_data	data;
 	t_list	*list;
+	int w;
+	int h;
 
 	start(&data);
 	fd = open(argv[1], O_RDONLY);
@@ -115,7 +117,8 @@ int	main(int argc, char **argv)
 	get_tex_path(data.str, &data, data.conf.str_num);
 	get_textures(&data);
 	get_floor_ceilling(data.str, &data, data.conf.str_num);
-	launch(0, &data);
+	launch(13, &data);
+	mlx_get_screen_size(data.mlx_win, &w, &h);
 	if (data.save == 1)
 		screen_shot(&data);
 	mlx_hook(data.mlx_win, 2, 1L<<0, launch, &data);

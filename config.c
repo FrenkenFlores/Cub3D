@@ -9,7 +9,7 @@ void	start(t_data *data)
 	data->player.move_speed = 7.0;
 	data->player.rotation_speed = 7 * (M_PI / 180);
 	data->conf.map_h = -1;
-	data->conf.map_on_off = 0;
+	data->conf.map_on_off = 1;
 	data->conf.map_size = 0.3;
 	data->conf.world_map = NULL;
 	data->conf.floor_color = -1;

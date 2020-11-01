@@ -72,7 +72,7 @@ void	sprites_conf(t_data *data)
 	x = (data->tex[4].width / 2) * cos(a);
 	y = (data->tex[4].width / 2) * sin(a);
 	while (tmp != NULL)
-	{				//rotation matrix
+	{
 		tmp->x1 = tmp->x + (x * cos(angel) - y * sin(angel));
 		tmp->y1 = tmp->y + (x * sin(angel) + y * cos(angel));
 		tmp->x2 = tmp->x + (x * cos(angel) + y * sin(angel));
@@ -145,14 +145,27 @@ void	render_sprites(t_data *data)
 		{
 			scale = distance_from_player_to_projection / tmp->distance;
 			projected_sprite_heigth = (data->tex[4].height * distance_from_player_to_projection) / tmp->distance;
+			projected_sprite_heigth = (projected_sprite_heigth > data->conf.win_h) ? data->conf.win_h : projected_sprite_heigth;
 			if (point_in_vert_segment(data, data->rays[column_id], tmp, column_id))
+			{
+				line(data,data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, data->rays[column_id]->wall_hit_x * data->conf.map_size, data->rays[column_id]->wall_hit_y * data->conf.map_size, 0xFF0000);
 				put_sprite(data, tmp, data->rays[column_id], column_id, scale, projected_sprite_heigth);
+			}
 			if (point_in_horz_segment(data, data->rays[column_id], tmp, column_id))
+			{
+				line(data,data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, data->rays[column_id]->wall_hit_x * data->conf.map_size, data->rays[column_id]->wall_hit_y * data->conf.map_size, 0xFF0000);
 				put_sprite(data, tmp, data->rays[column_id], column_id, scale, projected_sprite_heigth);
+			}
 			if (point_in_segment(data, data->rays[column_id], tmp, column_id))
+			{
+				line(data,data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, data->rays[column_id]->wall_hit_x * data->conf.map_size, data->rays[column_id]->wall_hit_y * data->conf.map_size, 0xFF0000);
 				put_sprite(data, tmp, data->rays[column_id], column_id, scale, projected_sprite_heigth);
+			}
 			column_id++;
 		}
+		line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, tmp->x1 * data->conf.map_size, tmp->y1 * data->conf.map_size, 0x0000FF);
+		line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, tmp->x2 * data->conf.map_size, tmp->y2 * data->conf.map_size, 0x0000FF);
+		line(data, data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, 0x0000FF);
 		tmp = tmp->next;
 	}
 }
