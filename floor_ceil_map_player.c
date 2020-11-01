@@ -3,7 +3,7 @@
 void	render_ceilling_floor(t_data *data)
 {
 	rect(data, 0, 0, data->conf.win_w, data->conf.win_h, data->conf.ceill_color);
-	rect(data, 0, data->conf.win_h / 2, data->conf.win_w, data->conf.win_h, data->conf.floor_color);
+	rect(data, 0, data->conf.win_h / 2, data->conf.win_w, data->conf.win_h / 2, data->conf.floor_color);
 }
 void	render_map(t_data *data)
 {

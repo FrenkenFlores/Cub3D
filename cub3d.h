@@ -197,6 +197,8 @@ void	get_tex_path(char **str, t_data *data, size_t elm_count);
 int		get_map(char **ptr, t_data *data);
 char	**getinfo(t_list **list, size_t elm_count);
 void	get_textures(t_data *data);
+void		ft_put_error(char *s, int id);
+
 
 
 
