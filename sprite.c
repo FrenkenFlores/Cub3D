@@ -1,5 +1,34 @@
 #include "cub3d.h"
 
+static t_sprite	*sort_sprite(t_data *all, t_sprite **ph)
+{
+	all->out = NULL;
+	while (*ph)
+	{
+		all->q = *ph;
+		*ph = (*ph)->next;
+		all->p = all->out;
+		all->pr = NULL;
+		while (all->p && all->q->distance < all->p->distance)
+		{
+			all->pr = all->p;
+			all->p = all->p->next;
+		}
+		if (all->pr == NULL)
+		{
+			all->q->next = all->out;
+			all->out = all->q;
+		}
+		else
+		{
+			all->q->next = all->p;
+			all->pr->next = all->q;
+		}
+	}
+	*ph = all->out;
+	return (*ph);
+}
+
 void	sprites_list(t_data *data)
 {
 	int i;
@@ -108,7 +137,8 @@ void	render_sprites(t_data *data)
 	tmp = data->sprite;
 	distance_from_player_to_projection = data->conf.win_w / 2 * tanl(FOV_ANGLE / 2);
 	sprites_conf(data);
-	while (tmp->next)
+	sort_sprite(data, &data->sprite);
+	while (tmp)
 	{
 		column_id = 0;
 		while(column_id < data->conf.num_rays)

@@ -3,12 +3,12 @@ NO ./textures/book_shelf_nourth.xpm
 SO ./textures/book_shelf_south.xpm
 WE ./textures/book_shelf_west.xpm
 EA ./textures/book_shelf_east.xpm
-S ./textures/light.xpm
+S ./textures/book_shelf_east.xpm
 F 0,38,77
 C 190,190,211
             1111111111111111111111111
             1000000000110000000000001
-            1011002001110020002000001
+            1011002001110022222000001
             1001000000000000000000W01
     111111111011000001110000000000001
     100000000011000001110111111111111

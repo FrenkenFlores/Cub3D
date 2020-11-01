@@ -107,24 +107,6 @@ typedef struct s_sprite
 	void		*next;
 }	t_sprite;
 
-typedef struct				s_sprite_list {
-	int						spr_x;
-	int						spr_y;
-	int						len_from_plr;
-	double					spr_dir;
-	double					spr_scr_size;
-	double					spr_scr_size1;
-	double					h_offset;
-	double					v_offset;
-	double					step;
-	int						i;
-	int						j;
-	int						count;
-	int						color;
-	struct s_spr_list		*next;
-}							t_sprite_list;
-
-
 
 typedef struct s_data
 {
@@ -139,7 +121,11 @@ typedef struct s_data
 	t_img		img;
 	t_img		tex[5];
 	t_sprite	*sprite;
-	t_sprite_list *sprite_list;
+	t_sprite	*out;
+	t_sprite	*q;
+	t_sprite	*p;
+	t_sprite	*pr;
+
 }	t_data;
 
 
