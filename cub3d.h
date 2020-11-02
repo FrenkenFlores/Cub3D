@@ -12,7 +12,7 @@
 # include <math.h>
 # include "./libft/libft.h"
 # include "./get_next_line/get_next_line.h"
-# include "./mlx/mlx.h"
+# include "./minilibx_opengl/mlx.h"
 
 
 typedef struct s_list
@@ -175,7 +175,6 @@ void	check_error_save(t_data *data, int argc, char **argv, int fd);
 void	ft_put_error(char *s, int id);
 void	start(t_data *data);
 size_t	make_list(int fd, t_list **list);
-t_list	*push_back(char *str, t_list *old_list);
 void	get_player_location(t_data *data);
 void	get_resolution(char **str, t_data *data, size_t elm_count);
 void	get_floor_ceilling(char **str, t_data *data, size_t elm_count);
