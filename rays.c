@@ -31,6 +31,7 @@ void	render_rays(t_data *data)
 		ray->wall_hit_x = (horz_distance < vert_distance) ? ray->horz_wall_hit_x : ray->vert_wall_hit_x;
 		ray->wall_hit_y = (horz_distance < vert_distance) ? ray->horz_wall_hit_y : ray->vert_wall_hit_y;
 		ray->distance = (horz_distance < vert_distance) ? horz_distance : vert_distance;
+
 		ray->ray_hit_vertical_wall = (horz_distance > vert_distance) ? 1 : 0;
 		if (data->conf.map_on_off == 1)
 			line(data,data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, ray->wall_hit_x * data->conf.map_size, ray->wall_hit_y * data->conf.map_size, 0xFFFF00);

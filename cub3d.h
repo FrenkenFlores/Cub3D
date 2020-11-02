@@ -93,6 +93,14 @@ typedef struct s_conf
 
 typedef struct s_sprite
 {
+	double spr_dir;
+	int i;
+	int	j;
+	double					step;
+	int						count;
+	int						color;
+
+
 	int			x;
 	int			y;
 	double			x1;
@@ -103,7 +111,10 @@ typedef struct s_sprite
 	double		distance;
 	double		ray_hit_x;
 	double		ray_hit_y;
-	int		sprite_width;
+	int		sprite_w;
+	int		sprite_h;
+	double	h_offset;
+	double	v_offset;
 	void		*next;
 }	t_sprite;
 
