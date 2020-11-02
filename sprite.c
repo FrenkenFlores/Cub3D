@@ -1,5 +1,34 @@
 #include "cub3d.h"
 
+static t_sprite	*sort_sprite(t_data *all, t_sprite **ph)
+{
+	all->out = NULL;
+	while (*ph)
+	{
+		all->q = *ph;
+		*ph = (*ph)->next;
+		all->p = all->out;
+		all->pr = NULL;
+		while (all->p && all->q->distance < all->p->distance)
+		{
+			all->pr = all->p;
+			all->p = all->p->next;
+		}
+		if (all->pr == NULL)
+		{
+			all->q->next = all->out;
+			all->out = all->q;
+		}
+		else
+		{
+			all->q->next = all->p;
+			all->pr->next = all->q;
+		}
+	}
+	*ph = all->out;
+	return (*ph);
+}
+
 void	sprites_list(t_data *data)
 {
 	int i;
@@ -21,7 +50,6 @@ void	sprites_list(t_data *data)
 				tmp->y = (j + 1) * TILE_SIZE;
 				tmp->next = (t_sprite *)malloc(sizeof(t_sprite));
 				tmp = tmp->next;
-				data->conf.num_sprites++;
 			}
 			i++;
 		}
@@ -98,51 +126,6 @@ void	put_sprite(t_data *data, t_sprite *sprite, t_ray *ray, int column_id, doubl
 	}
 }
 
-static void bubble_sort(int a[], int n) {
-    int i = 0, j = 0, tmp;
-    for (i = 0; i < n; i++) 
-	{   // loop n times - 1 per element
-        for (j = 0; j < n - i - 1; j++) 
-		{ // last i elements are sorted already
-            if (a[j] > a[j + 1]) 
-			{  // swop if order is broken
-                tmp = a[j];
-                a[j] = a[j + 1];
-                a[j + 1] = tmp;
-            }
-        }
-    }
-}
-
-static t_sprite	*sort_sprite_list(t_data *all, t_sprite **ph)
-{
-	all->out = NULL;
-	while (*ph)
-	{
-		all->q = *ph;
-		*ph = (*ph)->next;
-		all->p = all->out;
-		all->pr = NULL;
-		while (all->p && all->q->distance < all->p->distance)
-		{
-			all->pr = all->p;
-			all->p = all->p->next;
-		}
-		if (all->pr == NULL)
-		{
-			all->q->next = all->out;
-			all->out = all->q;
-		}
-		else
-		{
-			all->q->next = all->p;
-			all->pr->next = all->q;
-		}
-	}
-	*ph = all->out;
-	return (*ph);
-}
-
 void	render_sprites(t_data *data)
 {
 	int column_id;
@@ -151,10 +134,10 @@ void	render_sprites(t_data *data)
 	double scale;
 	t_sprite *tmp;
 
-	distance_from_player_to_projection = data->conf.win_w / 2 * tanl(FOV_ANGLE / 2);
 	tmp = data->sprite;
+	distance_from_player_to_projection = data->conf.win_w / 2 * tanl(FOV_ANGLE / 2);
 	sprites_conf(data);
-	sort_sprite_list(data, &data->sprite);
+	sort_sprite(data, &data->sprite);
 	while (tmp)
 	{
 		column_id = 0;
@@ -162,14 +145,27 @@ void	render_sprites(t_data *data)
 		{
 			scale = distance_from_player_to_projection / tmp->distance;
 			projected_sprite_heigth = (data->tex[4].height * distance_from_player_to_projection) / tmp->distance;
+			projected_sprite_heigth = (projected_sprite_heigth > data->conf.win_h) ? data->conf.win_h : projected_sprite_heigth;
 			if (point_in_vert_segment(data, data->rays[column_id], tmp, column_id))
+			{
+				line(data,data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, data->rays[column_id]->wall_hit_x * data->conf.map_size, data->rays[column_id]->wall_hit_y * data->conf.map_size, 0xFF0000);
 				put_sprite(data, tmp, data->rays[column_id], column_id, scale, projected_sprite_heigth);
+			}
 			if (point_in_horz_segment(data, data->rays[column_id], tmp, column_id))
+			{
+				line(data,data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, data->rays[column_id]->wall_hit_x * data->conf.map_size, data->rays[column_id]->wall_hit_y * data->conf.map_size, 0xFF0000);
 				put_sprite(data, tmp, data->rays[column_id], column_id, scale, projected_sprite_heigth);
+			}
 			if (point_in_segment(data, data->rays[column_id], tmp, column_id))
+			{
+				line(data,data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, data->rays[column_id]->wall_hit_x * data->conf.map_size, data->rays[column_id]->wall_hit_y * data->conf.map_size, 0xFF0000);
 				put_sprite(data, tmp, data->rays[column_id], column_id, scale, projected_sprite_heigth);
+			}
 			column_id++;
 		}
+		line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, tmp->x1 * data->conf.map_size, tmp->y1 * data->conf.map_size, 0x0000FF);
+		line(data, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, tmp->x2 * data->conf.map_size, tmp->y2 * data->conf.map_size, 0x0000FF);
+		line(data, data->player.x * data->conf.map_size, data->player.y * data->conf.map_size, tmp->x * data->conf.map_size, tmp->y * data->conf.map_size, 0x0000FF);
 		tmp = tmp->next;
 	}
 }

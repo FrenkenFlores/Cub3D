@@ -2,12 +2,14 @@
 
 static void	check_resolution(t_data *data)
 {
-	data->conf.win_h = (data->conf.win_h > 800) ? 800 : data->conf.win_h;
-	data->conf.win_w = (data->conf.win_w > 1280) ? 1280 : data->conf.win_w;
+	int sizex;
+	int sizey;
+
+	mlx_get_screen_size(data->mlx_win, &sizex, &sizey);
+	data->conf.win_h = (data->conf.win_h > sizey) ? sizey : data->conf.win_h;
+	data->conf.win_w = (data->conf.win_w > sizex) ? sizex : data->conf.win_w;
 	data->conf.win_h = (data->conf.win_h < 300) ? 300 : data->conf.win_h;
 	data->conf.win_w = (data->conf.win_w < 300) ? 300 : data->conf.win_w;
-	data->conf.win_w = (data->conf.win_w > data->conf.win_h * 2.5) ? data->conf.win_h * 2.5 : data->conf.win_w;
-	data->conf.win_h = (data->conf.win_h > data->conf.win_w / 2.5) ? data->conf.win_w / 2.5 : data->conf.win_h;
 	if (data->conf.win_h <= 0 || data->conf.win_w <= 0)
 		ft_put_error("\nInvalid resolution parameters\n", EINVAL);
 }

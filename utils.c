@@ -1,17 +1,5 @@
 #include "cub3d.h"
 
-void	ft_bzero(void *str, size_t nbr)
-{
-	size_t i;
-
-	i = 0;
-	while (i < nbr)
-	{
-		*((char*)str++) = '\0';
-		i++;
-	}
-}
-
 int		ft_min(int a, int b)
 {
 	return((a < b) ? a : b);

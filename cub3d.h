@@ -12,7 +12,7 @@
 # include <math.h>
 # include "./libft/libft.h"
 # include "./get_next_line/get_next_line.h"
-# include "./mlx/mlx.h"
+# include "./minilibx_opengl/mlx.h"
 
 
 typedef struct s_list
@@ -86,7 +86,6 @@ typedef struct s_conf
 	double	map_size;
 	int		map_on_off;
 	int		num_rays;
-	int		num_sprites;
 	unsigned long		ceill_color;
 	unsigned long		floor_color;
 	char	**world_map;
@@ -108,6 +107,7 @@ typedef struct s_sprite
 	void		*next;
 }	t_sprite;
 
+
 typedef struct s_data
 {
 	double		depth_buffer[1920];
@@ -125,10 +125,12 @@ typedef struct s_data
 	t_sprite	*q;
 	t_sprite	*p;
 	t_sprite	*pr;
+
 }	t_data;
 
 
-
+int	mlx_get_screen_size(void *mlx_ptr, int *sizex, int *sizey);
+void	update(int keycode, t_data *data);
 void	sprites_list(t_data *data);
 void	sprites_conf(t_data *data);
 t_img	scale_sprites(t_data *data, t_img tex, double scale, int tex_x);
@@ -181,8 +183,11 @@ int		get_map(char **ptr, t_data *data);
 char	**getinfo(t_list **list, size_t elm_count);
 void	get_textures(t_data *data);
 void		ft_put_error(char *s, int id);
-void	ft_bzero(void *str, size_t nbr);
-void	screen_shot(t_data *data);
+
+
+
+
+
 
 
 

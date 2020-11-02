@@ -1,5 +1,18 @@
 #include "cub3d.h"
 
+
+void	ft_bzero(void *str, size_t nbr)
+{
+	size_t i;
+
+	i = 0;
+	while (i < nbr)
+	{
+		*((char*)str++) = '\0';
+		i++;
+	}
+}
+
 static void		create_bmp_header(t_data *data, int size, int fd)
 {
 	unsigned char		bmp_header[54];
@@ -46,7 +59,6 @@ static void		print_pixels(t_data *data, int fd)
 		y--;
 	}
 }
-
 
 void	screen_shot(t_data *data)
 {
