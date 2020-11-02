@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_resolution.c                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: fflores <marvin@42.fr>                     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/11/02 15:27:55 by fflores           #+#    #+#             */
+/*   Updated: 2020/11/02 15:27:57 by fflores          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "cub3d.h"
 
 static void	check_resolution(t_data *data)
@@ -12,13 +24,14 @@ static void	check_resolution(t_data *data)
 	data->conf.win_w = (data->conf.win_w < 300) ? 300 : data->conf.win_w;
 	if (data->conf.win_h <= 0 || data->conf.win_w <= 0)
 		ft_put_error("\nInvalid resolution parameters\n", EINVAL);
+	data->conf.num_rays = data->conf.win_w / STRIP_WIDTH;
 }
 
-void	get_resolution(char **str, t_data *data, size_t elm_count)
+void		get_resolution(char **str, t_data *data, size_t elm_count)
 {
 	size_t	j;
-	size_t i;
-	
+	size_t	i;
+
 	j = 0;
 	while (j < elm_count)
 	{

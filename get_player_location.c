@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_player_location.c                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: fflores <marvin@42.fr>                     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/11/02 15:13:19 by fflores           #+#    #+#             */
+/*   Updated: 2020/11/02 15:13:21 by fflores          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "cub3d.h"
 
 static int	find_north(t_data *data, int i, int j)
@@ -31,38 +43,31 @@ static int	find_west(t_data *data, int i, int j)
 	return (1);
 }
 
-static void check(int detcted)
-{
-	if (detcted > 1)
-		ft_put_error("\nRestricted to have more then one orientation on the map\n", EINVAL);
-	else if (detcted == 0)
-		ft_put_error("\nThere is no player on the map\n", EINVAL);
-}
-
-void	get_player_location(t_data *data)
+void		get_player_location(t_data *data)
 {
 	int i;
 	int j;
 	int detcted;
 
-	j = 0;
+	j = -1;
 	detcted = 0;
-	while (j < data->conf.map_h)
+	while (++j < data->conf.map_h)
 	{
-		i = 0;
-		while (data->conf.world_map[j][i])
+		i = -1;
+		while (data->conf.world_map[j][++i])
 		{
-			if (data->conf.world_map[j][i] == 'N')			
+			if (data->conf.world_map[j][i] == 'N')
 				detcted += find_north(data, i, j);
-			if (data->conf.world_map[j][i] == 'E')			
+			if (data->conf.world_map[j][i] == 'E')
 				detcted += find_east(data, i, j);
-			if (data->conf.world_map[j][i] == 'S')			
+			if (data->conf.world_map[j][i] == 'S')
 				detcted += find_south(data, i, j);
-			if (data->conf.world_map[j][i] == 'W')			
+			if (data->conf.world_map[j][i] == 'W')
 				detcted += find_west(data, i, j);
-			i++;
 		}
-		j++;
 	}
-	check(detcted);
+	if (detcted > 1)
+		ft_put_error("\nInvalid map\n", EINVAL);
+	else if (detcted == 0)
+		ft_put_error("\nInvalid map\n", EINVAL);
 }

@@ -1,25 +1,39 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   key_input.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: fflores <marvin@42.fr>                     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/11/02 15:37:38 by fflores           #+#    #+#             */
+/*   Updated: 2020/11/02 15:37:40 by fflores          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "cub3d.h"
 
-void	key_input(int keycode, t_data *data)
+static void	init_pl_xy(t_data *data, double new_x, double new_y)
 {
-	int i;
-	int j;
-	double	player_new_x;
-	double	player_new_y;	
+	data->player.y = new_y;
+	data->player.x = new_x;
+}
 
-	i = 0;
-	j = -1 * data->player.radius;
-	player_new_y = data->player.y;
-	player_new_x = data->player.x;
+void		key_input(int keycode, t_data *data)
+{
+	double	new_x;
+	double	new_y;
+
+	new_y = data->player.y;
+	new_x = data->player.x;
 	if (keycode == 13)
 	{
-		player_new_y += sin(data->player.rotation_angel) * data->player.move_speed;
-		player_new_x += cos(data->player.rotation_angel) * data->player.move_speed;
+		new_y += sin(data->player.rotation_angel) * data->player.move_speed;
+		new_x += cos(data->player.rotation_angel) * data->player.move_speed;
 	}
 	if (keycode == 1)
 	{
-		player_new_y -= sin(data->player.rotation_angel) * data->player.move_speed;
-		player_new_x -= cos(data->player.rotation_angel) * data->player.move_speed;
+		new_y -= sin(data->player.rotation_angel) * data->player.move_speed;
+		new_x -= cos(data->player.rotation_angel) * data->player.move_speed;
 	}
 	if (keycode == 0)
 		data->player.rotation_angel -= data->player.rotation_speed;
@@ -27,36 +41,34 @@ void	key_input(int keycode, t_data *data)
 		data->player.rotation_angel += data->player.rotation_speed;
 	if (keycode == 53)
 		mlx_close(data);
-	if (safe_distance(data, player_new_x, player_new_y) != -1)
-	{
-		data->player.y = player_new_y;
-		data->player.x = player_new_x;
-	}
+	if (safe_distance(data, new_x, new_y) != -1)
+		init_pl_xy(data, new_x, new_y);
 }
 
-void	mlx_close(t_data *data)
+void		mlx_close(t_data *data)
 {
 	mlx_destroy_window(data->mlx, data->mlx_win);
 	exit(EXIT_SUCCESS);
 }
 
-int		safe_distance(t_data *data, double player_x, double player_y)
+int			safe_distance(t_data *data, double player_x, double player_y)
 {
-	int i;
-	int j;
-	double radius;
+	int		i;
+	int		j;
+	double	radius;
 
 	radius = data->player.radius;
 	j = -1 * radius;
-	while(j <= radius)
+	while (j <= radius)
 	{
 		i = -1 * radius;
-		while(i <= radius)
+		while (i <= radius)
 		{
 			if (i * i < radius * radius - j * j)
 			{
 				if (is_wall(data, player_x + i, player_y + j))
-					return -1;			}
+					return (-1);
+			}
 			i++;
 		}
 		j++;

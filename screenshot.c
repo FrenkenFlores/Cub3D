@@ -1,17 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   screenshot.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: fflores <marvin@42.fr>                     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/11/02 17:58:10 by fflores           #+#    #+#             */
+/*   Updated: 2020/11/02 17:58:12 by fflores          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "cub3d.h"
-
-
-void	ft_bzero(void *str, size_t nbr)
-{
-	size_t i;
-
-	i = 0;
-	while (i < nbr)
-	{
-		*((char*)str++) = '\0';
-		i++;
-	}
-}
 
 static void		create_bmp_header(t_data *data, int size, int fd)
 {
@@ -60,7 +59,7 @@ static void		print_pixels(t_data *data, int fd)
 	}
 }
 
-void	screen_shot(t_data *data)
+void			screen_shot(t_data *data)
 {
 	int fd;
 	int size;
@@ -73,5 +72,5 @@ void	screen_shot(t_data *data)
 	create_bmp_header(data, size, fd);
 	print_pixels(data, fd);
 	close(fd);
-	exit(EXIT_SUCCESS);	
+	exit(EXIT_SUCCESS);
 }

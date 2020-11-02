@@ -1,41 +1,37 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   make_list.c                                        :+:      :+:    :+:   */
+/*   render_ceilling_floor.c                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fflores <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2020/11/02 16:09:35 by fflores           #+#    #+#             */
-/*   Updated: 2020/11/02 16:09:36 by fflores          ###   ########.fr       */
+/*   Created: 2020/11/02 18:59:31 by fflores           #+#    #+#             */
+/*   Updated: 2020/11/02 18:59:33 by fflores          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "cub3d.h"
 
-static t_list	*push_back(char *str, t_list *old_list)
+void	render_ceilling_floor(t_data *data)
 {
-	t_list	*new_list;
+	int i;
+	int j;
 
-	if (!(new_list = (t_list*)malloc(sizeof(t_list))))
-		return (NULL);
-	new_list->content = str;
-	new_list->next = old_list;
-	return (new_list);
-}
-
-size_t			make_list(int fd, t_list **list)
-{
-	char	*str;
-	size_t	i;
-
-	i = 0;
-	*list = NULL;
-	while (get_next_line(fd, &str))
+	j = 0;
+	while (j < data->conf.win_h)
 	{
-		*list = push_back(str, *list);
-		i++;
+		i = -1;
+		while (++i < data->conf.win_w)
+			mlx_pix_put(data, 0 + i, 0 + j, data->conf.ceill_color);
+		j++;
 	}
-	*list = push_back(str, *list);
-	i++;
-	return (i);
+	j = 0;
+	while (j < data->conf.win_h / 2)
+	{
+		i = -1;
+		while (++i < data->conf.win_w)
+			mlx_pix_put(data, 0 + i, data->conf.win_h
+			/ 2 + j, data->conf.floor_color);
+		j++;
+	}
 }

@@ -1,8 +1,20 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_floor_ceilling.c                               :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: fflores <marvin@42.fr>                     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/11/02 15:10:57 by fflores           #+#    #+#             */
+/*   Updated: 2020/11/02 15:10:59 by fflores          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "cub3d.h"
 
-static void	get_floor_color(char **str, t_data *data, int j)
+static void		get_floor_color(char **str, t_data *data, int j)
 {
-	size_t i;
+	size_t		i;
 	int			r;
 	int			g;
 	int			b;
@@ -27,13 +39,13 @@ static void	get_floor_color(char **str, t_data *data, int j)
 	}
 }
 
-static void	get_ceil_color(char **str, t_data *data, int j)
+static void		get_ceil_color(char **str, t_data *data, int j)
 {
-	size_t i;
+	size_t		i;
 	int			r;
 	int			g;
 	int			b;
-	
+
 	i = 0;
 	while (i < ft_strlen(str[j]))
 	{
@@ -54,11 +66,10 @@ static void	get_ceil_color(char **str, t_data *data, int j)
 	}
 }
 
-void	get_floor_ceilling(char **str, t_data *data, size_t elm_count)
+void			get_floor_ceilling(char **str, t_data *data, size_t elm_count)
 {
 	size_t	j;
-	size_t i;
-	
+
 	j = 0;
 	while (j < elm_count)
 	{
@@ -67,6 +78,6 @@ void	get_floor_ceilling(char **str, t_data *data, size_t elm_count)
 		j++;
 	}
 	if (data->conf.ceill_color < 0x000000 || data->conf.ceill_color >= 0xFFFFFF
-    || data->conf.floor_color < 0x000000 || data->conf.floor_color >= 0xFFFFFF)
+	|| data->conf.floor_color < 0x000000 || data->conf.floor_color >= 0xFFFFFF)
 		ft_put_error("\nInvalid color parameters\n", EINVAL);
 }
