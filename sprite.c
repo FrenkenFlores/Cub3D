@@ -113,81 +113,34 @@ static void bubble_sort(int a[], int n) {
         }
     }
 }
-/*
-void sort_list(t_sprite *head) 
-{
-	t_sprite *a = NULL;
-	t_sprite *b = NULL; 
-	t_sprite *c = NULL;
-	t_sprite*e = NULL; 
-	t_sprite *tmp = NULL; 
- 
-	while(e != head->next) 
-	{
-		c = a = head;
-		b = a->next;
-		while(a != e) 
-		{
-			if(a->distance > b->distance) 
-			{
-				if(a == head) 
-				{
-					tmp = b -> next;
-					b->next = a;
-					a->next = tmp;
-					head = b;
-					c = b;
-				} 
-				else 
-				{
-					tmp = b->next;
-					b->next = a;
-					a->next = tmp;
-					c->next = b;
-					c = b;
-				}
-			} 
-			else 
-			{
-				c = a;
-				a = a->next;
-			}
-			b = a->next;
-			if(b == e)
-			e = a;
-		}
-	}
-}
-*/
-void sort_list(t_sprite *sprite, int num_sprites)
-{
-	t_sprite *start = sprite;
-	t_sprite *p = sprite;
-	t_sprite *q = sprite->next;
-	t_sprite *tmp = NULL;
-	int i;
 
-	i = 0;
-	while (i <= num_sprites)
+static t_sprite	*sort_sprite_list(t_data *all, t_sprite **ph)
+{
+	all->out = NULL;
+	while (*ph)
 	{
-		if (p->distance > q->distance)
+		all->q = *ph;
+		*ph = (*ph)->next;
+		all->p = all->out;
+		all->pr = NULL;
+		while (all->p && all->q->distance < all->p->distance)
 		{
-			tmp = q->next;
-			q->next = p;
-			p->next = tmp;
+			all->pr = all->p;
+			all->p = all->p->next;
+		}
+		if (all->pr == NULL)
+		{
+			all->q->next = all->out;
+			all->out = all->q;
 		}
 		else
 		{
-			p = p->next;
-			q = q->next;
+			all->q->next = all->p;
+			all->pr->next = all->q;
 		}
-//		if (q == NULL)
-//		{
-//			p = sprite;
-//			q = sprite->next;
-//		}
-		i++;
 	}
+	*ph = all->out;
+	return (*ph);
 }
 
 void	render_sprites(t_data *data)
@@ -197,19 +150,12 @@ void	render_sprites(t_data *data)
 	double projected_sprite_heigth;
 	double scale;
 	t_sprite *tmp;
-	t_sprite *tmp2;
 
 	distance_from_player_to_projection = data->conf.win_w / 2 * tanl(FOV_ANGLE / 2);
-	sprites_conf(data);
-//	sort_list(data->sprite, data->conf.num_sprites);
 	tmp = data->sprite;
-//	tmp2 = data->sprite;
-//	for(int j = 0; j < data->conf.num_sprites; j++)
-//	{
-//		printf("%i - %f\n", j, tmp2->distance);
-//		tmp2 = tmp2->next;
-//	}
-	while (tmp->next)
+	sprites_conf(data);
+	sort_sprite_list(data, &data->sprite);
+	while (tmp)
 	{
 		column_id = 0;
 		while(column_id < data->conf.num_rays)

@@ -1,6 +1,6 @@
 #include "cub3d.h"
 
-static void	update(int keycode, t_data *data)
+static void	launch(int keycode, t_data *data)
 {
 	t_img	put_img;
 
@@ -49,7 +49,10 @@ int	main(int argc, char **argv)
 	get_tex_path(data.str, &data, data.conf.str_num);
 	get_textures(&data);
 	get_floor_ceilling(data.str, &data, data.conf.str_num);
-	mlx_hook(data.mlx_win, 2, 1L<<0, update, &data);
+	launch(13, &data);
+	if (data.save == 1)
+		screen_shot(&data);
+	mlx_hook(data.mlx_win, 2, 1L<<0, launch, &data);
 	mlx_hook(data.mlx_win, 17, 1L<<0, mlx_close, 0);
 	mlx_loop(data.mlx);
 	return (0);

@@ -108,25 +108,6 @@ typedef struct s_sprite
 	void		*next;
 }	t_sprite;
 
-typedef struct				s_sprite_list {
-	int						spr_x;
-	int						spr_y;
-	int						len_from_plr;
-	double					spr_dir;
-	double					spr_scr_size;
-	double					spr_scr_size1;
-	double					h_offset;
-	double					v_offset;
-	double					step;
-	int						i;
-	int						j;
-	int						count;
-	int						color;
-	struct s_spr_list		*next;
-}							t_sprite_list;
-
-
-
 typedef struct s_data
 {
 	double		depth_buffer[1920];
@@ -140,6 +121,10 @@ typedef struct s_data
 	t_img		img;
 	t_img		tex[5];
 	t_sprite	*sprite;
+	t_sprite	*out;
+	t_sprite	*q;
+	t_sprite	*p;
+	t_sprite	*pr;
 }	t_data;
 
 
@@ -195,10 +180,9 @@ void	get_tex_path(char **str, t_data *data, size_t elm_count);
 int		get_map(char **ptr, t_data *data);
 char	**getinfo(t_list **list, size_t elm_count);
 void	get_textures(t_data *data);
-
-
-
-
+void		ft_put_error(char *s, int id);
+void	ft_bzero(void *str, size_t nbr);
+void	screen_shot(t_data *data);
 
 
 

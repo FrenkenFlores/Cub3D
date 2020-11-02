@@ -1,5 +1,17 @@
 #include "cub3d.h"
 
+void	ft_bzero(void *str, size_t nbr)
+{
+	size_t i;
+
+	i = 0;
+	while (i < nbr)
+	{
+		*((char*)str++) = '\0';
+		i++;
+	}
+}
+
 int		ft_min(int a, int b)
 {
 	return((a < b) ? a : b);
@@ -75,10 +87,10 @@ void	rect(t_data *data, double x, double y, int rect_width, int rect_height, int
 	int j;
 
 	j = 0;
-	while(j <= rect_height)
+	while(j < rect_height)
 	{
 		i = 0;
-		while (i <= rect_width)
+		while (i < rect_width)
 		{
 			mlx_pix_put(data, x + i, y + j, color);
 			i++;

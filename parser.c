@@ -16,7 +16,7 @@ void	check_error_save(t_data *data, int argc, char **argv, int fd)
 		ft_put_error("\nToo few arguments\n", EINVAL);
 	if (argc > 2 && ((ft_strncmp(argv[2],"--save", ft_strlen("--save")) != 0) || (ft_strlen(argv[2]) != ft_strlen("--save"))))
 		ft_put_error("\nOnly --save flag is allowed\n", EINVAL);
-	else 
+	else if (argc > 2 && ((ft_strncmp(argv[2],"--save", ft_strlen("--save")) == 0) || (ft_strlen(argv[2]) == ft_strlen("--save")))) 
 		data->save = 1;
 	if (argc >= 2 && (ft_strncmp(argv[1] + ft_strlen(argv[1]) - 4, ".cub", 2)) != 0)
 		ft_put_error("\nInvalid file\n", EINVAL);
