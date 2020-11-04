@@ -66,8 +66,6 @@ void		get_player_location(t_data *data)
 				detcted += find_west(data, i, j);
 		}
 	}
-	if (detcted > 1)
-		ft_put_error("\nInvalid map\n", EINVAL);
-	else if (detcted == 0)
+	if (detcted != 1)
 		ft_put_error("\nInvalid map\n", EINVAL);
 }

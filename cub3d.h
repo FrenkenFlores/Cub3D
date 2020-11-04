@@ -13,7 +13,7 @@
 #ifndef CUB3D_H
 # define CUB3D_H
 # define TILE_SIZE 32
-# define FOV_ANGLE 90 * M_PI / 180
+# define FOV_ANGLE 60 * M_PI / 180
 # define STRIP_WIDTH 1
 # include <errno.h>
 # include <stdio.h>
@@ -24,7 +24,6 @@
 # include <math.h>
 # include "./libft/libft.h"
 # include "./get_next_line/get_next_line.h"
-//# include "./mlx_statlib/mlx.h"
 # include "./mlx_dylib/mlx.h"
 
 typedef struct	s_list
@@ -85,11 +84,20 @@ typedef struct	s_img
 typedef struct	s_conf
 {
 	double			projected_wall_heigth;
+	double			rm_wall_heigth;
 	char			*path_north;
 	char			*path_east;
 	char			*path_south;
 	char			*path_west;
 	char			*path_sprite;
+	int				double_key_r;
+	int				double_key_n;
+	int				double_key_e;
+	int				double_key_s;
+	int				double_key_w;
+	int				double_key_sp;
+	int				double_key_f;
+	int				double_key_c;
 	int				str_num;
 	int				screen_size_x;
 	int				screen_size_y;
@@ -153,6 +161,8 @@ void			sprites_conf(t_data *data);
 void			screen_shot(t_data *data);
 void			sprites_list(t_data *data);
 void			render_sprites(t_data *data);
+void			check_double_key(t_data *data);
+void			check_invalid_key(t_data *data, char **str);
 int				ft_min(int a, int b);
 int				ft_max(int a, int b);
 int				ft_numsize(int num);
@@ -169,7 +179,7 @@ int				point_in_segment(t_data *data, t_ray *ray,
 				t_sprite *sprite, int column_id);
 void			key_input(int keycode, t_data *data);
 int				safe_distance(t_data *data, double player_x, double player_y);
-void			mlx_close(t_data *data);
+int				mlx_close(t_data *data);
 void			render_ceilling_floor(t_data *data);
 void			render_rays(t_data *data);
 void			free_rays_array(t_data *data);

@@ -45,8 +45,10 @@ void		key_input(int keycode, t_data *data)
 		init_pl_xy(data, new_x, new_y);
 }
 
-void		mlx_close(t_data *data)
+int			mlx_close(t_data *data)
 {
+	if (data == 0)
+		exit(EXIT_SUCCESS);
 	mlx_destroy_window(data->mlx, data->mlx_win);
 	exit(EXIT_SUCCESS);
 }

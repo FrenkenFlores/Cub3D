@@ -17,14 +17,17 @@ static void	check_resolution(t_data *data)
 	int sizex;
 	int sizey;
 
+	if (data->conf.win_w == -1 || data->conf.win_h == -1)
+		ft_put_error("\ndid not find the resolution key\n", EINVAL);
 	mlx_get_screen_size(data->mlx_win, &sizex, &sizey);
-	data->conf.win_h = (data->conf.win_h > sizey) ? sizey : data->conf.win_h;
-	data->conf.win_w = (data->conf.win_w > sizex) ? sizex : data->conf.win_w;
-	data->conf.win_h = (data->conf.win_h < 300) ? 300 : data->conf.win_h;
-	data->conf.win_w = (data->conf.win_w < 300) ? 300 : data->conf.win_w;
+	if (data->conf.win_h > sizey || data->conf.win_h > INT32_MAX)
+		data->conf.win_h = sizey;
+	if (data->conf.win_w > sizex || data->conf.win_w > INT32_MAX)
+		data->conf.win_w = sizex;
 	if (data->conf.win_h <= 0 || data->conf.win_w <= 0)
 		ft_put_error("\nInvalid resolution parameters\n", EINVAL);
 	data->conf.num_rays = data->conf.win_w / STRIP_WIDTH;
+	data->conf.double_key_r += 1;
 }
 
 void		get_resolution(char **str, t_data *data, size_t elm_count)

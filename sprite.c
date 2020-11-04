@@ -57,7 +57,7 @@ static void	draw_spr_res(t_data *data, t_sprite *sprite)
 					/ sprite->sprite_w),
 				(int)(sprite->j * (data->tex[4].height / TILE_SIZE) * TILE_SIZE
 					/ sprite->sprite_h));
-		if (sprite->color != 0xFFFFFF)
+		if (sprite->color >= 0)
 			mlx_pix_put(data, sprite->h_offset + sprite->i,
 					sprite->v_offset + sprite->j, sprite->color);
 		sprite->j++;
@@ -93,12 +93,9 @@ static void	put_sprite(t_data *data, t_sprite *sprite)
 
 void		render_sprites(t_data *data)
 {
-	double		distance_from_player_to_projection;
 	t_sprite	*tmp;
 
 	tmp = data->sprite;
-	distance_from_player_to_projection = data->conf.win_w
-	/ 2 * tanl(FOV_ANGLE / 2);
 	sprites_conf(data);
 	sort_sprite(data, &data->sprite);
 	while (tmp)

@@ -33,6 +33,7 @@ static void		get_floor_color(char **str, t_data *data, int j)
 			i += ft_numsize(g);
 			b = ft_atoi(str[j] + i);
 			data->conf.floor_color = rgb_hex(r, g, b);
+			data->conf.double_key_f += 1;
 			continue;
 		}
 		i++;
@@ -60,6 +61,7 @@ static void		get_ceil_color(char **str, t_data *data, int j)
 			i += ft_numsize(g);
 			b = ft_atoi(str[j] + i);
 			data->conf.ceill_color = rgb_hex(r, g, b);
+			data->conf.double_key_c += 1;
 			continue;
 		}
 		i++;
@@ -77,7 +79,9 @@ void			get_floor_ceilling(char **str, t_data *data, size_t elm_count)
 		get_ceil_color(str, data, j);
 		j++;
 	}
-	if (data->conf.ceill_color < 0x000000 || data->conf.ceill_color >= 0xFFFFFF
-	|| data->conf.floor_color < 0x000000 || data->conf.floor_color >= 0xFFFFFF)
+	if (data->conf.ceill_color < 0x000000 || data->conf.ceill_color > 0xFFFFFF
+	|| data->conf.floor_color < 0x000000 || data->conf.floor_color > 0xFFFFFF)
 		ft_put_error("\nInvalid color parameters\n", EINVAL);
+	if (data->conf.double_key_c != 1 || data->conf.double_key_f != 1)
+		ft_put_error("\nInvalid key\n", EINVAL);
 }

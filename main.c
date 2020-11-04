@@ -23,7 +23,7 @@ static int	launch(int keycode, t_data *data)
 	render_sprites(data);
 	put_img = data->img;
 	mlx_put_image_to_window(data->mlx, data->mlx_win, put_img.img_ptr, 0, 0);
-	return(1);
+	return (1);
 }
 
 static void	take_raycast_input(t_data *data)
@@ -32,6 +32,7 @@ static void	take_raycast_input(t_data *data)
 	get_tex_path(data->str, data, data->conf.str_num);
 	get_textures(data);
 	get_floor_ceilling(data->str, data, data->conf.str_num);
+	check_double_key(data);
 }
 
 static void	mlx_config(t_data *data)
@@ -66,6 +67,7 @@ int			main(int argc, char **argv)
 	if (data.save == 1)
 		screen_shot(&data);
 	mlx_hook(data.mlx_win, 2, 1L << 0, launch, &data);
+	mlx_hook(data.mlx_win, 17, 1L << 0, mlx_close, 0);
 	mlx_loop(data.mlx);
 	return (0);
 }

@@ -14,14 +14,15 @@ SRC = ray_hit_wall.c config.c rays.c render_ceilling_floor.c \
 	main.c screenshot.c get_floor_ceilling.c make_list.c sprite.c \
 	sprite_list.c get_player_location.c get_resolution.c utils.c \
 	get_tex_path.c mlx_utils.c walls.c key_input.c parser.c \
-	get_next_line/get_next_line.c get_next_line/get_next_line_utils.c\
+	get_next_line/get_next_line.c get_next_line/get_next_line_utils.c \
+	check_double_key.c get_textures.c check_invalid_key.c
 
 
 NAME = cub3D
 
 OSRC = $(SRC:.c=.o)
 
-FLAGS = -Wall -Wextra -Werror
+FLAGS = -Wall -Wextra -Werror -g
 
 all: $(NAME) $(OSRC)
 
