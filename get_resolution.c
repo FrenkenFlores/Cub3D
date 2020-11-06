@@ -40,7 +40,6 @@ static void	check_resolution(t_data *data)
 	if (data->conf.win_h <= 0 || data->conf.win_w <= 0)
 		ft_put_error("\nInvalid resolution parameters\n", EINVAL);
 	data->conf.num_rays = data->conf.win_w / STRIP_WIDTH;
-	data->conf.double_key_r += 1;
 }
 
 void		get_resolution(char **str, t_data *data, size_t elm_count)
@@ -54,9 +53,9 @@ void		get_resolution(char **str, t_data *data, size_t elm_count)
 		i = -1;
 		while (++i < ft_strlen(str[j]) && str[j][i] != '\0')
 		{
-			if (str[j][i] == 'R')
+			if (str[j][i++] == 'R')
 			{
-				i++;
+				data->conf.double_key_r += 1;
 				while (str[j][i] == ' ')
 					i++;
 				data->conf.win_w = ft_atoi(str[j] + i);

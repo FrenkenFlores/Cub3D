@@ -18,5 +18,5 @@ void	check_double_key(t_data *data)
 	|| data->conf.double_key_s != 1 || data->conf.double_key_w != 1
 	|| data->conf.double_key_sp != 1 || data->conf.double_key_c != 1
 	|| data->conf.double_key_f != 1 || data->conf.double_key_r != 1)
-		ft_put_error("\nInvalid key\n", EINVAL);
+		ft_put_error("\nInvalid key or double key\n", EINVAL);
 }
