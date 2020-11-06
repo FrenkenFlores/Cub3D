@@ -12,6 +12,19 @@
 
 #include "cub3d.h"
 
+static void	check_after(char *str)
+{
+	int i;
+
+	i = 0;
+	while (str[i] != '\0')
+	{
+		if (str[i] != ' ')
+			ft_put_error("\nInvalid resolution parameters\n", EINVAL);
+		i++;
+	}
+}
+
 static void	check_resolution(t_data *data)
 {
 	int sizex;
@@ -35,11 +48,11 @@ void		get_resolution(char **str, t_data *data, size_t elm_count)
 	size_t	j;
 	size_t	i;
 
-	j = 0;
-	while (j < elm_count)
+	j = -1;
+	while (++j < elm_count)
 	{
-		i = 0;
-		while (i < ft_strlen(str[j]))
+		i = -1;
+		while (++i < ft_strlen(str[j]) && str[j][i] != '\0')
 		{
 			if (str[j][i] == 'R')
 			{
@@ -51,10 +64,10 @@ void		get_resolution(char **str, t_data *data, size_t elm_count)
 				while (str[j][i] == ' ')
 					i++;
 				data->conf.win_h = ft_atoi(str[j] + i);
+				i += ft_numsize(data->conf.win_h);
+				check_after(str[j] + i);
 			}
-			i++;
 		}
-		j++;
 	}
 	check_resolution(data);
 }

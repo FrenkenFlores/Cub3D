@@ -12,6 +12,22 @@
 
 #include "cub3d.h"
 
+static void		check_after(char *str)
+{
+	int i;
+
+	i = 1;
+	while (str[i] == ' ')
+		i++;
+	while (str[i] != '\0')
+	{
+		if (str[i] == ',' || (str[i] >= '0' && str[i] <= '9'))
+			i++;
+		else
+			ft_put_error("\nInvalid color parameters\n", EINVAL);
+	}
+}
+
 static void		get_floor_color(char **str, t_data *data, int j)
 {
 	size_t		i;
@@ -25,6 +41,7 @@ static void		get_floor_color(char **str, t_data *data, int j)
 		if (str[j][i] == 'F' && str[j][i + 1] == ' ')
 		{
 			i += 1;
+			check_after(str[j]);
 			while (str[j][i] == ' ')
 				i++;
 			r = ft_atoi(str[j] + i++);
@@ -53,6 +70,7 @@ static void		get_ceil_color(char **str, t_data *data, int j)
 		if (str[j][i] == 'C' && str[j][i + 1] == ' ')
 		{
 			i += 1;
+			check_after(str[j]);
 			while (str[j][i] == ' ')
 				i++;
 			r = ft_atoi(str[j] + i++);

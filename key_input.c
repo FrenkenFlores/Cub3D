@@ -59,7 +59,7 @@ int			safe_distance(t_data *data, double player_x, double player_y)
 	int		j;
 	double	radius;
 
-	radius = data->player.radius;
+	radius = data->player.radius - 10;
 	j = -1 * radius;
 	while (j <= radius)
 	{
