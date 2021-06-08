@@ -14,6 +14,7 @@
 
 void	start(t_data *data)
 {
+	data->rays = NULL;
 	data->conf.win_h = -1;
 	data->conf.win_w = -1;
 	data->player.x = 0;

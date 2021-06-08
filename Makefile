@@ -47,13 +47,6 @@ fclean: clean
 	@rm -f libmlx.a
 	@rm -f libmlx.dylib
 	@rm -f $(NAME)
+	@rm -rf cub3D.dSYM
 
 re: fclean all
-
-#all:
-#	gcc *.c ./get_next_line/*.c ./libft/ft_atoi.c ./libft/ft_bzero.c ./libft/ft_strlen.c ./libft/ft_strncmp.c libmlx.a  -L mlx  -lmlx -framework OpenGL -framework AppKit -lz
-#	./a.out ./maps/map.cub
-#
-#save:
-#	gcc *.c ./get_next_line/*.c ./libft/ft_atoi.c libmlx.a  -L mlx  -lmlx -framework OpenGL -framework AppKit -lz
-#	 ./a.out ./maps/map.cub --save
