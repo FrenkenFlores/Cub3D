@@ -78,7 +78,8 @@ W - move forward<br/>
 S - move backward<br/>
 ESC - close application<br/>
 
-###Gameplay
+### Gameplay
+
 ![](./gif/cub3D.gif)
 
 ---
